@@ -56,6 +56,7 @@ typedef struct _Ghost
  double ecartangle;
  double DisPar;
  double longRestant;
+
  
  
 
@@ -68,13 +69,12 @@ extern void EtatGhost();
 void Send_Ghost();
 void Send_GhostLong();
 extern double VitesseTheta;
-
 extern PidCorrector PidX;
 extern PidCorrector PidTheta;
 extern float saveSpeed;
 extern float saveSpeed_1;
 extern int etapeghost;
-
+double Projete( double xA, double yA,double bx, double by);
 void Distance_to_waypoint();
 void TransmitAsserv();
 void UpdateAsservissement();

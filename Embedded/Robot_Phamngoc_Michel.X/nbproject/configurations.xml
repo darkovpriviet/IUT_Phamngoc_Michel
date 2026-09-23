@@ -58,7 +58,7 @@
         <targetDevice>dsPIC33EP512MU814</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>ICD5Tool</platformTool>
+        <platformTool>ICD4Tool</platformTool>
         <languageToolchain>XCDSC</languageToolchain>
         <languageToolchainVersion>3.30</languageToolchainVersion>
         <platform>3</platform>

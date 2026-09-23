@@ -17,6 +17,10 @@ using System.Windows.Media.Animation;
 using WpfAsservissementDisplay_NS;
 using SciChart.Data.Model;
 using static SciChart.Drawing.Utility.PointUtil;
+using System.Security.Cryptography.Xml;
+using System.Windows.Ink;
+using SciChart.Charting.Common.Databinding;
+using System;
 
 //kp==7 et Kp==140
 
@@ -33,7 +37,12 @@ namespace RobotInterface
     public partial class MainWindow : Window
     {
 
-       
+        int step = 30;
+        private double logicalX = 500, logicalY = 500 , gridWidth =1000, gridHeight = 1000;
+        private double pixelX, pixelY;
+        private double gridX = 0;
+        private double gridY = 0;
+        private double lastAngle;
         bool toogle, b;
         byte i;
         bool autoControlActivated;
@@ -73,22 +82,79 @@ namespace RobotInterface
 
         }
 
+
+
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            System.Windows.Point Point1 = new System.Windows.Point(myGrid.ActualWidth / 2, (myGrid.ActualHeight / 2) - 50);
-            System.Windows.Point Point2 = new System.Windows.Point(myGrid.ActualWidth / 2, (myGrid.ActualHeight / 2) + 50);
-            System.Windows.Point Point3 = new System.Windows.Point((myGrid.ActualWidth / 2) + 50, myGrid.ActualHeight / 2);
-            PointCollection myPointCollection = new PointCollection();
-            myPointCollection.Add(Point1);
-            myPointCollection.Add(Point2);
-            myPointCollection.Add(Point3);
-            PositionGhost.Points = myPointCollection;
 
+        
 
             RotationGhost.CenterX = myGrid.ActualWidth / 2;
             RotationGhost.CenterY = myGrid.ActualHeight / 2;
             PositionGhost.RenderTransform = RotationGhost;
 
+            pixelX = (logicalX / gridWidth) * myGrid.ActualWidth;
+            pixelY = (logicalY / gridHeight) * myGrid.ActualHeight;
+
+            pixelX = Math.Round(pixelX / step) * step;
+            pixelY = Math.Round(pixelY / step) * step;
+
+            int size = 10;
+            System.Windows.Point Point1 = new System.Windows.Point(pixelX, pixelY - size);
+            System.Windows.Point Point2 = new System.Windows.Point(pixelX, pixelY + size);
+            System.Windows.Point Point3 = new System.Windows.Point(pixelX + size, pixelY);
+            PointCollection myPointCollection = new PointCollection();
+            myPointCollection.Add(Point1);
+            myPointCollection.Add(Point2);
+            myPointCollection.Add(Point3);
+            PositionGhost.Points = myPointCollection;
+            PositionPolygon();
+        }
+
+        private void SizeGrid(object sender, System.EventArgs e)
+        {
+            myGrid.Children.Clear();
+
+
+
+
+            for (double x = 0; x <= myGrid.ActualWidth; x += step)
+            {
+                myGrid.Children.Add(new System.Windows.Shapes.Line
+                {
+                    X1 = x,
+                    Y1 = 0,
+
+                    X2 = x,
+                    Y2 = myGrid.ActualHeight,
+                    Stroke = Brushes.LightGray,
+                    StrokeThickness = 1
+
+
+                });
+
+            }
+            for (double y = 0; y <= myGrid.ActualHeight; y += step)
+            {
+                myGrid.Children.Add(new System.Windows.Shapes.Line
+                {
+                    X1 = 0,
+                    Y1 = y,
+
+                    X2 = myGrid.ActualWidth,
+                    Y2 = y,
+                    Stroke = Brushes.LightGray,
+                    StrokeThickness = 1
+
+
+                });
+            }
+        }
+
+        private void PositionPolygon()
+        {
+            Canvas.SetLeft(PositionGhost, gridX * step);
+            Canvas.SetTop(PositionGhost, gridY * step);
         }
 
 
@@ -268,9 +334,8 @@ namespace RobotInterface
 
             
             
-         /*  TextBoxréception.Text += ("Reçu : " + textBoxEmission.Text + "\n");
-            textBoxEmission.Text = "";
-         */
+     
+     
             if (toogle == false)
             {
                 buttonEnvoyer.Background = Brushes.RoyalBlue;
@@ -328,22 +393,7 @@ namespace RobotInterface
             TextBoxréception.Text = "";
         }
 
-        private void SizeGrid ( object sender, System.EventArgs e)
-        {
-            Abscisse.X1 = 0;
-            Abscisse.Y1 = myGrid.ActualHeight / 2;
-            Abscisse.X2 = myGrid.ActualWidth;
-            Abscisse.Y2 = myGrid.ActualHeight / 2;
-
-            Ordonnee.X1 = myGrid.ActualWidth / 2;
-            Ordonnee.Y1 = 0;
-            Ordonnee.X2 = myGrid.ActualWidth / 2;
-            Ordonnee.Y2 = myGrid.ActualHeight;
-
-
-          
-
-        }
+    
 
         private void Test_Click(object sender, RoutedEventArgs e)
         {
@@ -351,7 +401,10 @@ namespace RobotInterface
                 return;
             if (!float.TryParse(YInput.Text, out float YInput1))
                 return;
-           
+            if (!float.TryParse(EcartInput.Text, out float Ecartinput1))
+                return;
+
+
 
 
             PointWay(XInput1, YInput1);
@@ -359,7 +412,8 @@ namespace RobotInterface
             List<byte> Input = new List<byte>();
             Input.AddRange(BitConverter.GetBytes(XInput1));
             Input.AddRange(BitConverter.GetBytes(YInput1));
-          
+            Input.AddRange(BitConverter.GetBytes(Ecartinput1));
+
             byte[] ThetaTab = Input.ToArray();
 
             UartEncodeAndSendMessage(0x81, ThetaTab.Length, ThetaTab);
@@ -452,31 +506,22 @@ namespace RobotInterface
             STATE_RECULE_EN_COURS = 15
         }
 
-        void Graph( double Theta)
+        void Graph( double Angle)
         {
-          double Degres = - Theta * 180 / 3.14;
+     
 
         RotateTransform rotateTransform = new RotateTransform();
-            rotateTransform.Angle = Degres;
-
-        rotateTransform.CenterX = myGrid.ActualWidth / 2;
-        rotateTransform.CenterY = myGrid.ActualHeight / 2;
         PositionGhost.RenderTransform = rotateTransform;
 
-
+        rotateTransform.CenterX = pixelX;
+        rotateTransform.CenterY = pixelY;
+            DoubleAnimation animation = new DoubleAnimation();
+            animation.From = lastAngle;
+            animation.To = Angle;
+            animation.Duration = TimeSpan.FromSeconds(2);
+            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, animation);
+            lastAngle = Angle;
         }
-        
-           
-
-
-
-      
-
-
-         
-
-
-
         
 
         void ProcessDecodedMessage(int msgFunction, int msgPayloadLength, byte[] msgPayload)
@@ -587,7 +632,7 @@ namespace RobotInterface
           
                     ThetaG.Text= "ThetaGhost :"+ BitConverter.ToSingle(msgPayload, 8).ToString("N3");
                     Graph(BitConverter.ToSingle(msgPayload, 8));
-                    TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 12).ToString("N3"); 
+                    //TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 12).ToString("N3"); 
                     //TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 16).ToString("N3");
                     
 
@@ -596,11 +641,9 @@ namespace RobotInterface
 
                 case StateMessage.GhostLong:
                     PositionGhost1(BitConverter.ToSingle(msgPayload, 0), BitConverter.ToSingle(msgPayload, 4));
+                    TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 8).ToString("N3");
+                    PointWay(BitConverter.ToSingle(msgPayload, 12), BitConverter.ToSingle(msgPayload, 16));
                     break;
-
-
-
-
 
             }
 
@@ -619,7 +662,6 @@ namespace RobotInterface
             PositionGhost.RenderTransform = Long;
 
         }
-
 
         public enum StateMessage : int
         {
@@ -739,7 +781,5 @@ namespace RobotInterface
 
 
     }
-
-
 
 }

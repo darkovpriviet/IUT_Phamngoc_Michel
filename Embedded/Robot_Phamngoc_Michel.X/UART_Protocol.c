@@ -23,6 +23,7 @@ float a;
 float b;
 float c;
 
+
 unsigned char UartCalculateChecksum(int msgFunction,
         int msgPayloadLength, unsigned char* msgPayload) {
     //Fonction prenant entree la trame et sa longueur pour calculer le checksum
@@ -188,8 +189,10 @@ void UartProcessDecodedMessage(int function,
             etapeghost=ROTATION;
             Rotation.X =getFloatFromBytes(payload,0);
             Rotation.Y =getFloatFromBytes(payload,4);
+         
             
               if(Rotation.X==0){
+                  
                 if(Rotation.Y<0)
                     Rotation.ThetaWay=-M_PI/2;
                 else
@@ -208,9 +211,34 @@ void UartProcessDecodedMessage(int function,
                     Rotation.ThetaWay=-M_PI+atan(Rotation.Y/Rotation.X);
             }
             
-            
-            
+       
           
+            
+            Rotation.ecartangle = ModuloByAngle(Rotation.ThetaWay,getFloatFromBytes(payload,8))-Rotation.ThetaWay;
+            
+            
+            double R=40;
+            B.x = R * cos(Rotation.ecartangle);
+            B.y = R * sin(Rotation.ecartangle);
+        /*    if ( Rotation.ecartangle == M_PI /2 | Rotation.ecartangle == -M_PI /2 ){
+                     B.x=40;
+                     B.y= sqrt((Rotation.X*Rotation.X)+(Rotation.Y*Rotation.Y));
+            }
+            else if (Rotation.ecartangle == M_PI | Rotation.ecartangle == 0){
+                B.y=40;
+                B.x= sqrt((Rotation.X*Rotation.X)+(Rotation.Y*Rotation.Y));
+            }
+            else
+            {
+                B.y=40;
+                double save_angle =tan(Rotation.ecartangle);
+                B.x= B.y/tan(Rotation.ecartangle);
+                        
+            }*/
+               
+               
+                
+               
             
             
             

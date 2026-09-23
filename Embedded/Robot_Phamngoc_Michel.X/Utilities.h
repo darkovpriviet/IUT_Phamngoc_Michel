@@ -2,6 +2,12 @@
 #define	UTILITIES_H
 
 # define PI 3.141592653589793
+
+typedef struct {
+    double x;
+    double y;
+} Point;
+
 double ModuloByAngle(double angleToCenterAround, double angle);
 double Modulo2PIAngleRadian(double angleRadian) ;
 float getFloat(unsigned char *p, int index);
@@ -9,6 +15,11 @@ double getDouble(unsigned char *p, int index);
 void getBytesFromFloat(unsigned char *p, int index, float f);
 void getBytesFromInt32(unsigned char *p, int index, long in);
 void getBytesFromDouble(unsigned char *p, int index, double d);
+double distancePointDroite(Point P, Point A, Point B);
+
+extern  Point P;
+extern  Point A;
+extern  Point B;
 
 #endif /*UTILITIES_H*/
 

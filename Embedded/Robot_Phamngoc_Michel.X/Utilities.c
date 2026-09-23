@@ -50,3 +50,22 @@ void getBytesFromDouble(unsigned char *p, int index, double d)
     for (i = 0; i < 8; i++)
         p[index + i] = f_ptr[i];
 }
+
+
+double distancePointDroite(Point P, Point A, Point B)
+{
+    double dx = B.x - A.x;
+    double dy = B.y - A.y;
+
+    double longueurAB = sqrt(dx * dx + dy * dy);
+
+    if (longueurAB == 0.0)
+        return 0.0;
+
+    // Produit scalaire AP avec AB
+    double projection = (P.x - A.x) * dx
+                      + (P.y - A.y) * dy;
+
+    // Distance A -> projection de P
+    return projection / longueurAB;
+}

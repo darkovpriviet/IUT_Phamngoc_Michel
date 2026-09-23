@@ -22,14 +22,21 @@
             <ColumnDefinition/>
             <ColumnDefinition Width="30" Focusable="False"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="1" Grid.Row="1" SizeChanged="SizeGrid">
-        
-            <Canvas x:Name="myGrid" >
-                <Polygon x:Name="PositionGhost"  Fill="Red" StrokeThickness="2"></Polygon>
+        <Grid Grid.Column="1" Grid.Row="1" >
+
+            <Canvas x:Name="myGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="SizeGrid" >
+                
                 <Line x:Name="HypWay" StrokeDashArray="4 2" Stroke="Green" StrokeThickness="2" ></Line>
-         
-                <Line x:Name="Abscisse" Stroke="Black" StrokeThickness="2" ></Line>
-                <Line x:Name="Ordonnee" Stroke="Black" StrokeThickness="2"></Line>
+                <Line x:Name="PointB" StrokeDashArray="4 2" Stroke="Yellow" StrokeThickness="2"></Line>
+            </Canvas>
+            <Canvas x:Name="ObjectCanvas"
+            Background="Transparent">
+
+                <Polygon x:Name="PositionGhost"
+                 Fill="Red"
+                 Stroke="Black"
+                 StrokeThickness="2"/>
+
             </Canvas>
 
         </Grid>
@@ -178,7 +185,8 @@
             <TextBlock  Text="XYInput" Margin=" 0,0,0,15"  />
             <TextBox x:Name="XInput"  KeyUp="TextKp_KeyUp"  />
             <TextBox x:Name="YInput"  KeyUp="TextKp_KeyUp"  />
-        
+            <TextBox x:Name="EcartInput"  KeyUp="TextKp_KeyUp"  />
+
 
         </StackPanel>
        

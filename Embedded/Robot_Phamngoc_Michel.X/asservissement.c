@@ -10,6 +10,10 @@
 #include "math.h"
 
 Ghost Rotation;
+Point P;
+Point A;
+Point B;
+
 Ghost longitunal;
 double VitesseTheta = 4;
 double VitesseLineaire = 2;
@@ -227,7 +231,7 @@ void Longueur() {
     
    if(VitesseLineaire==0 && Abs(longitunal.longRestant) <0.01){
        longitunal.ThetaGhost = Rotation.DisPro;
-       etapeghost=0;
+     
     
        
        
@@ -241,21 +245,26 @@ void Send_Ghost(){
    unsigned char payload[20];
    getBytesFromFloat(payload,0,Rotation.X_Ghost);
    getBytesFromFloat(payload,4,Rotation.Y_Ghost);
-   getBytesFromFloat(payload, 8,Rotation.ThetaGhost);
+   getBytesFromFloat(payload, 8,Rotation.ThetaGhost *180/M_PI);
    getBytesFromFloat(payload,12,Rotation.HypoWay);
    getBytesFromFloat(payload,16, longitunal.ThetaGhost);
+   
   
    
    UartEncodeAndSendMessage(0x81,20,payload);
     
 }
 void Send_GhostLong(){
-  
-     unsigned char payload[8];
+    double view=distancePointDroite(P,A,B);
+     unsigned char payload[24];
      getBytesFromFloat(payload,0,longitunal.X_Ghost);
      getBytesFromFloat(payload,4,longitunal.Y_Ghost);
+     getBytesFromFloat(payload,8, Rotation.DisPro);
+     getBytesFromFloat(payload,12,B.x);
+     getBytesFromFloat(payload,16,B.y);
      
-     UartEncodeAndSendMessage(0x82,8,payload);
+     
+     UartEncodeAndSendMessage(0x82,24,payload);
 }
 
 void EtatGhost(){
@@ -282,13 +291,35 @@ void EtatGhost(){
 
 void Distance_to_waypoint(){
     Rotation.HypoWay=sqrt((Rotation.X*Rotation.X)+(Rotation.Y*Rotation.Y));
+    //Rotation.DisPro= Rotation.HypoWay*cos(robotState.angleRadianFromOdometry-Rotation.ThetaWay);
+    //Rotation.DisPar = sqrt(robotState.xPosFromOdometry*robotState.xPosFromOdometry+robotState.yPosFromOdometry*robotState.yPosFromOdometry);
+    //Rotation.ecartangle = atan((Rotation.HypoWay*sin(Rotation.ThetaWay-robotState.angleRadianFromOdometry))/(Rotation.DisPro-Rotation.DisPar));
+    P.x=Rotation.X;
+    P.y=Rotation.Y;
     
-    Rotation.DisPro= Rotation.HypoWay*cos(robotState.angleRadianFromOdometry-Rotation.ThetaWay);
-    Rotation.DisPar = sqrt(robotState.xPosFromOdometry*robotState.xPosFromOdometry+robotState.yPosFromOdometry*robotState.yPosFromOdometry);
-    Rotation.ecartangle = atan((Rotation.HypoWay*sin(Rotation.ThetaWay-robotState.angleRadianFromOdometry))/(Rotation.DisPro-Rotation.DisPar));
+    Rotation.DisPro = Projete(0,0,B.x,B.y);
+    
+ 
+}
 
-    
-    
 
+
+double Projete( double xA, double yA,double bx, double by){
+double dx = b.x - xA;;
+double dy = b.y - yA;
     
+double t =
+    (( Rotation.X - xA) * dx + ( Rotation.Y - yA) * dy)
+    / (dx * dx + dy * dy);
+
+double xp = xA + t * dx;
+double yp = yA + t * dy;
+
+double distance =
+    sqrt(
+        (xp - xA) * (xp - xA) +
+        (yp - yA) * (yp - yA)
+    );
+
+return distance;
 }
