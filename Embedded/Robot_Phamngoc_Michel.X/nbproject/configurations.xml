@@ -60,7 +60,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>ICD4Tool</platformTool>
         <languageToolchain>XCDSC</languageToolchain>
-        <languageToolchainVersion>3.30</languageToolchainVersion>
+        <languageToolchainVersion>3.21</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>

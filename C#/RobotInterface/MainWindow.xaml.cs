@@ -36,13 +36,14 @@ namespace RobotInterface
 
     public partial class MainWindow : Window
     {
+        private double distanceRobot = 50;
 
         int step = 30;
         private double logicalX = 500, logicalY = 500 , gridWidth =1000, gridHeight = 1000;
         private double pixelX, pixelY;
         private double gridX = 0;
         private double gridY = 0;
-        private double lastAngle;
+
         bool toogle, b;
         byte i;
         bool autoControlActivated;
@@ -50,7 +51,10 @@ namespace RobotInterface
         ExtendedSerialPort serialPort1;
         DispatcherTimer timerAffichage;
         Robot robot = new Robot();
-        RotateTransform RotationGhost = new RotateTransform();
+        private RotateTransform RotationGhost = new RotateTransform();
+        private TranslateTransform TranslationGhost = new TranslateTransform();
+
+        private double lastAngle = 0;
 
 
 
@@ -64,7 +68,7 @@ namespace RobotInterface
             timerAffichage.Tick += TimerAffichage_Tick;
             timerAffichage.Start();
             InitializeComponent();
-            serialPort1 = new ExtendedSerialPort("COM3", 115200, Parity.None, 8, StopBits.One);
+            serialPort1 = new ExtendedSerialPort("COM5", 115200, Parity.None, 8, StopBits.One);
             serialPort1.DataReceived += SerialPort1_DataReceived;
             serialPort1.Open();
            //var _globalKeyboardHook = new GlobalKeyboardHook();
@@ -86,37 +90,28 @@ namespace RobotInterface
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            Canvas.SetLeft(PositionGhost, myGrid.ActualWidth / 2);
+            Canvas.SetTop(PositionGhost, myGrid.ActualHeight / 2);
 
-        
+            TransformGroup group = new TransformGroup();
 
-            RotationGhost.CenterX = myGrid.ActualWidth / 2;
-            RotationGhost.CenterY = myGrid.ActualHeight / 2;
-            PositionGhost.RenderTransform = RotationGhost;
+            group.Children.Add(RotationGhost);
+            group.Children.Add(TranslationGhost);
 
-            pixelX = (logicalX / gridWidth) * myGrid.ActualWidth;
-            pixelY = (logicalY / gridHeight) * myGrid.ActualHeight;
+            PositionGhost.RenderTransform = group;
 
-            pixelX = Math.Round(pixelX / step) * step;
-            pixelY = Math.Round(pixelY / step) * step;
-
-            int size = 10;
-            System.Windows.Point Point1 = new System.Windows.Point(pixelX, pixelY - size);
-            System.Windows.Point Point2 = new System.Windows.Point(pixelX, pixelY + size);
-            System.Windows.Point Point3 = new System.Windows.Point(pixelX + size, pixelY);
-            PointCollection myPointCollection = new PointCollection();
-            myPointCollection.Add(Point1);
-            myPointCollection.Add(Point2);
-            myPointCollection.Add(Point3);
-            PositionGhost.Points = myPointCollection;
-            PositionPolygon();
         }
 
-        private void SizeGrid(object sender, System.EventArgs e)
+
+
+
+
+        private void SizeGrid(object sender, EventArgs e)
         {
-            myGrid.Children.Clear();
-
-
-
+            foreach (var child in myGrid.Children.OfType<System.Windows.Shapes.Line>().ToList())
+            {
+                myGrid.Children.Remove(child);
+            }
 
             for (double x = 0; x <= myGrid.ActualWidth; x += step)
             {
@@ -124,38 +119,28 @@ namespace RobotInterface
                 {
                     X1 = x,
                     Y1 = 0,
-
                     X2 = x,
                     Y2 = myGrid.ActualHeight,
                     Stroke = Brushes.LightGray,
                     StrokeThickness = 1
-
-
                 });
-
             }
+
             for (double y = 0; y <= myGrid.ActualHeight; y += step)
             {
                 myGrid.Children.Add(new System.Windows.Shapes.Line
                 {
                     X1 = 0,
                     Y1 = y,
-
                     X2 = myGrid.ActualWidth,
                     Y2 = y,
                     Stroke = Brushes.LightGray,
                     StrokeThickness = 1
-
-
                 });
             }
         }
 
-        private void PositionPolygon()
-        {
-            Canvas.SetLeft(PositionGhost, gridX * step);
-            Canvas.SetTop(PositionGhost, gridY * step);
-        }
+
 
 
         public void TimerAffichage_Tick(object sender, EventArgs e)
@@ -225,22 +210,11 @@ namespace RobotInterface
             UartEncodeAndSendMessage(0x0081, payload.Length, payload); //1.57   
             XW.Text = "XWaypoint :" + x;
             YW.Text = "YWaypoint :" + Y;
-            PointWay(x, Y);
+        
         }
 
 
 
-
-        private void PointWay(float x, float y )
-        {
-
-  
-            HypWay.X1 = myGrid.ActualWidth / 2;
-            HypWay.Y1 = myGrid. ActualHeight / 2;
-            HypWay.X2 = (myGrid.ActualWidth / 2) + 50*x;
-            HypWay.Y2 = (myGrid.ActualHeight / 2) - 50 * y;
-
-        }
 
         private void Test_Click_Ouest(object sender, RoutedEventArgs e)
         {
@@ -354,40 +328,43 @@ namespace RobotInterface
 
         }
 
-      /*  private void _globalKeyboardHook_KeyPressed(object? sender, KeyArgs e)
+        /*  private void _globalKeyboardHook_KeyPressed(object? sender, KeyArgs e)
+          {
+              if (autoControlActivated == false)
+              {
+                  switch (e.keyCode)
+                  {
+                      case KeyCode.LEFT:
+                          UartEncodeAndSendMessage(0x0051, 1, new byte[] {
+                          (byte)StateRobot.STATE_TOURNE_SUR_PLACE_GAUCHE });
+                          break;
+                      case KeyCode.RIGHT:
+                          UartEncodeAndSendMessage(0x0051, 1, new byte[] {
+                      (byte)StateRobot.STATE_TOURNE_SUR_PLACE_DROITE });
+                          break;
+                      case KeyCode.UP:
+                          UartEncodeAndSendMessage(0x0051, 1, new byte[]
+                          { (byte)StateRobot.STATE_AVANCE });
+                          break;
+                      case KeyCode.DOWN:
+                          UartEncodeAndSendMessage(0x0051, 1, new byte[]
+                          { (byte)StateRobot.STATE_ARRET });
+                          break;
+                      case KeyCode.PAGEDOWN:
+                          UartEncodeAndSendMessage(0x0051, 1, new byte[]
+                          { (byte)StateRobot.STATE_RECULE });
+                          break;
+
+
+
+
+                  }
+              }
+          }*/
+       private void PointWay(double x, double y)
         {
-            if (autoControlActivated == false)
-            {
-                switch (e.keyCode)
-                {
-                    case KeyCode.LEFT:
-                        UartEncodeAndSendMessage(0x0051, 1, new byte[] {
-                        (byte)StateRobot.STATE_TOURNE_SUR_PLACE_GAUCHE });
-                        break;
-                    case KeyCode.RIGHT:
-                        UartEncodeAndSendMessage(0x0051, 1, new byte[] {
-                    (byte)StateRobot.STATE_TOURNE_SUR_PLACE_DROITE });
-                        break;
-                    case KeyCode.UP:
-                        UartEncodeAndSendMessage(0x0051, 1, new byte[]
-                        { (byte)StateRobot.STATE_AVANCE });
-                        break;
-                    case KeyCode.DOWN:
-                        UartEncodeAndSendMessage(0x0051, 1, new byte[]
-                        { (byte)StateRobot.STATE_ARRET });
-                        break;
-                    case KeyCode.PAGEDOWN:
-                        UartEncodeAndSendMessage(0x0051, 1, new byte[]
-                        { (byte)StateRobot.STATE_RECULE });
-                        break;
 
-                   
-                      
-
-                }
-            }
-        }*/
-
+        }
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
             TextBoxréception.Text = "";
@@ -506,23 +483,12 @@ namespace RobotInterface
             STATE_RECULE_EN_COURS = 15
         }
 
-        void Graph( double Angle)
-        {
-     
+   
 
-        RotateTransform rotateTransform = new RotateTransform();
-        PositionGhost.RenderTransform = rotateTransform;
+       
 
-        rotateTransform.CenterX = pixelX;
-        rotateTransform.CenterY = pixelY;
-            DoubleAnimation animation = new DoubleAnimation();
-            animation.From = lastAngle;
-            animation.To = Angle;
-            animation.Duration = TimeSpan.FromSeconds(2);
-            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, animation);
-            lastAngle = Angle;
-        }
-        
+
+
 
         void ProcessDecodedMessage(int msgFunction, int msgPayloadLength, byte[] msgPayload)
         {
@@ -553,9 +519,9 @@ namespace RobotInterface
                     break;
 
                 case StateMessage.IRDistance:
-                    IRG.Text = "IR Gauche : " + BitConverter.ToSingle(msgPayload, 0) + " cm";
-                    IRC.Text = "IR Centre : " + BitConverter.ToSingle(msgPayload, 4) + " cm";
-                    IRD.Text = "IR Droite : " + BitConverter.ToSingle(msgPayload, 8) + " cm";
+                    IRG.Text = "IR Gauche : " + BitConverter.ToSingle(msgPayload, 0).ToString("N1") + " cm";
+                    IRC.Text = "IR Centre : " + BitConverter.ToSingle(msgPayload, 4).ToString("N1") + " cm";
+                    IRD.Text = "IR Droite : " + BitConverter.ToSingle(msgPayload, 8).ToString("N1") + " cm";
                     break;
                 case StateMessage.Moteur:
                     MG.Text = "Vitesse Gauche : " + msgPayload[0] + "%";
@@ -630,19 +596,21 @@ namespace RobotInterface
                     XG.Text = "XGhost : " + BitConverter.ToSingle(msgPayload, 0);
                     YG.Text = "YGhost : " + BitConverter.ToSingle(msgPayload, 4);
           
-                    ThetaG.Text= "ThetaGhost :"+ BitConverter.ToSingle(msgPayload, 8).ToString("N3");
-                    Graph(BitConverter.ToSingle(msgPayload, 8));
+                    ThetaG.Text= "ThetaGhost :"+ BitConverter.ToSingle(msgPayload, 20).ToString("N3");
+                    RotateRobot(BitConverter.ToSingle(msgPayload, 8));
                     //TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 12).ToString("N3"); 
                     //TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 16).ToString("N3");
-                    
 
-         
+
+
+
                     break;
 
                 case StateMessage.GhostLong:
-                    PositionGhost1(BitConverter.ToSingle(msgPayload, 0), BitConverter.ToSingle(msgPayload, 4));
+                    Avance(BitConverter.ToSingle(msgPayload, 0), BitConverter.ToSingle(msgPayload, 4));
                     TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 8).ToString("N3");
-                    PointWay(BitConverter.ToSingle(msgPayload, 12), BitConverter.ToSingle(msgPayload, 16));
+
+
                     break;
 
             }
@@ -651,17 +619,34 @@ namespace RobotInterface
 
         }
 
-        private void PositionGhost1(float x, float y)
+        private void RotateRobot(double theta)
         {
-            TranslateTransform Long = new TranslateTransform();
-           
-            Long.X = 50*x;
-            Long.Y = -50*y;
-            RotationGhost.CenterX = myGrid.ActualWidth / 2 + x;
-            RotationGhost.CenterY = myGrid.ActualHeight / 2 + y;
-            PositionGhost.RenderTransform = Long;
+            DoubleAnimation animation = new DoubleAnimation
+            {
+                To = -theta,
+                Duration = TimeSpan.FromMilliseconds(100)
+            };
 
+            RotationGhost.BeginAnimation(
+                RotateTransform.AngleProperty,
+                animation);
+
+            lastAngle = -theta;
         }
+
+        private void Avance(double x, double y )
+        {
+
+
+
+            double pixelsParMetre = 50;
+
+            TranslationGhost.X = x * pixelsParMetre;
+            TranslationGhost.Y = -y * pixelsParMetre;
+        }
+
+
+
 
         public enum StateMessage : int
         {

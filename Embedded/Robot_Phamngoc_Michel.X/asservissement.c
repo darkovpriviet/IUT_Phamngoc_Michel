@@ -221,6 +221,7 @@ void Longueur() {
    longitunal.ThetaGhost = longitunal.ThetaGhost + longitunal.incrementTheta;
     longitunal.X_Ghost = longitunal.ThetaGhost * cos(Rotation.ThetaGhost);
     longitunal.Y_Ghost = longitunal.ThetaGhost * sin(Rotation.ThetaGhost);
+    longitunal.Distance = sqrt(  longitunal.X_Ghost*  longitunal.X_Ghost+ longitunal.Y_Ghost* longitunal.Y_Ghost);
     
 //   UartEncodeAndSendMessage(0x81,72,payload);
     Send_GhostLong();
@@ -231,6 +232,7 @@ void Longueur() {
     
    if(VitesseLineaire==0 && Abs(longitunal.longRestant) <0.01){
        longitunal.ThetaGhost = Rotation.DisPro;
+         etapeghost=0;
      
     
        
@@ -242,16 +244,17 @@ void Longueur() {
 }
 void Send_Ghost(){
     
-   unsigned char payload[20];
+   unsigned char payload[24];
    getBytesFromFloat(payload,0,Rotation.X_Ghost);
    getBytesFromFloat(payload,4,Rotation.Y_Ghost);
    getBytesFromFloat(payload, 8,Rotation.ThetaGhost *180/M_PI);
    getBytesFromFloat(payload,12,Rotation.HypoWay);
    getBytesFromFloat(payload,16, longitunal.ThetaGhost);
+     getBytesFromFloat(payload, 20,Rotation.ThetaGhost );
    
   
    
-   UartEncodeAndSendMessage(0x81,20,payload);
+   UartEncodeAndSendMessage(0x81,24,payload);
     
 }
 void Send_GhostLong(){
@@ -305,8 +308,8 @@ void Distance_to_waypoint(){
 
 
 double Projete( double xA, double yA,double bx, double by){
-double dx = b.x - xA;;
-double dy = b.y - yA;
+double dx = bx - xA;;
+double dy = by - yA;
     
 double t =
     (( Rotation.X - xA) * dx + ( Rotation.Y - yA) * dy)
