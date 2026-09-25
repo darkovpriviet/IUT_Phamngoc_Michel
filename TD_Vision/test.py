@@ -1,4 +1,5 @@
 import cv2
+import math
 import numpy as np
 from urllib.request import urlopen
 req = urlopen("http://www.vgies.com/downloads/robocup.png")
@@ -58,14 +59,14 @@ imagemaskb = cv2.inRange(imagehsv, lower_b, upper_b)
 cv2.imshow("Image␣Masque␣b", imagemaskb)
 cv2.waitKey(0)
 
-height, width, channels = img.shape
-blank_imageb = np.zeros((height,width,3), np.uint8)
-blank_imageg = np.zeros((height,width,3), np.uint8)
-blank_imagey = np.zeros((height,width,3), np.uint8)
+height1, width1, channels1 = img.shape
+blank_imageb = np.zeros((height1,width1,3), np.uint8)
+blank_imageg = np.zeros((height1,width1,3), np.uint8)
+blank_imagey = np.zeros((height1,width1,3), np.uint8)
 
-blank_imageb[:, 0:width] = (255, 0, 0)      # (B, G, R)
-blank_imageg[:, 0:width] = (0, 255, 0)      # (B, G, R)
-blank_imagey[:, 0:width] = (0, 255, 255)      # (B, G, R)
+blank_imageb[:, 0:width1] = (255, 0, 0)      # (B, G, R)
+blank_imageg[:, 0:width1] = (0, 255, 0)      # (B, G, R)
+blank_imagey[:, 0:width1] = (0, 255, 255)      # (B, G, R)
 
 blue = cv2.bitwise_and(blank_imageb,blank_imageb,mask=imagemaskb)
 green = cv2.bitwise_and(blank_imageg,blank_imageg,mask=imagemaskg)
@@ -75,6 +76,71 @@ Test = cv2.bitwise_or(blue,green)
 Test1 =cv2.bitwise_or(Test,yellow)
 
 cv2.imshow("Test", Test1)
+
+#TRANSFORMATIONS MANUELLES D’UNE IMAGE
+
+height = img.shape[0]
+width = img.shape[1]
+channels = img.shape[2]
+imgTransform = img
+'''
+for x in range(0, (int)(width/2)): # Applique une transformation sur WxH /2
+    for y in range (0, (int)(height/2)):
+            imgTransform[y,x][0] *= 0.5 # tend vers 0 assombrir l'image
+            imgTransform[y,x][1] *= 0.5
+            imgTransform[y,x][2] *= 0.5
+cv2.imshow("Transformation␣manuelle␣de␣l’image", imgTransform)
+cv2.waitKey(0)
+
+
+for x in range(0, (int)(width)): 
+    for y in range (0, height):
+            imgTransform[y,x][0] *= 0 #R
+            imgTransform[y,x][1] *= 1 #G # tend vers 0 assombrir l'image
+            imgTransform[y,x][2] *= 0 #B
+cv2.imshow("Transformation␣manuelle␣de␣l’image", imgTransform)
+cv2.waitKey(0)
+
+'''
+step=0
+
+for x in range(0, (int)(width)):
+    step+=1/width
+    for y in range (0, height):    
+            imgTransform[y,x][0] *= 1-step #R
+            imgTransform[y,x][1] *= 1-step #G # tend vers 0 assombrir l'image
+            imgTransform[y,x][2] *= 1-step #B
+cv2.imshow("Transformation␣manuelle␣de␣l’image", imgTransform)
+cv2.waitKey(0)
+Dis = 2
+theta=0
+
+for theta in range(0,math.pi):
+    x = Dis*math.cos(theta)
+    y = Dis*math.sin(theta)
+    
+            for x in range (int(height/2), height):
+         
+            imgTransform[y,x][0] *= 1
+            imgTransform[y,x][1] *= 0
+            imgTransform[y,x][2] *= 0
+           
+    for y in range (int(height/2), height):
+         
+            imgTransform[y,x][0] *= 1
+            imgTransform[y,x][1] *= 0
+            imgTransform[y,x][2] *= 0
+
+
+       
+  
+cv2.imshow("Transformation␣manuelle␣de␣l’image", imgTransform)
+cv2.waitKey(0)
+
+
+
+
+
 
 
 
