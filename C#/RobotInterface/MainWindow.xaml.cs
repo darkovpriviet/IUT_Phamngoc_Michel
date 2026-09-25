@@ -36,14 +36,10 @@ namespace RobotInterface
 
     public partial class MainWindow : Window
     {
-        private double distanceRobot = 50;
-
+    
+     
         int step = 30;
-        private double logicalX = 500, logicalY = 500 , gridWidth =1000, gridHeight = 1000;
-        private double pixelX, pixelY;
-        private double gridX = 0;
-        private double gridY = 0;
-
+        private Ellipse waypointPoint;
         bool toogle, b;
         byte i;
         bool autoControlActivated;
@@ -64,11 +60,11 @@ namespace RobotInterface
         {
           
             timerAffichage = new DispatcherTimer();
-            timerAffichage.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            timerAffichage.Interval = new TimeSpan(0, 0, 0, 0, 10);
             timerAffichage.Tick += TimerAffichage_Tick;
             timerAffichage.Start();
             InitializeComponent();
-            serialPort1 = new ExtendedSerialPort("COM5", 115200, Parity.None, 8, StopBits.One);
+            serialPort1 = new ExtendedSerialPort("COM3", 115200, Parity.None, 8, StopBits.One);
             serialPort1.DataReceived += SerialPort1_DataReceived;
             serialPort1.Open();
            //var _globalKeyboardHook = new GlobalKeyboardHook();
@@ -90,29 +86,6 @@ namespace RobotInterface
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            Canvas.SetLeft(PositionGhost, myGrid.ActualWidth / 2);
-            Canvas.SetTop(PositionGhost, myGrid.ActualHeight / 2);
-
-            TransformGroup group = new TransformGroup();
-
-            group.Children.Add(RotationGhost);
-            group.Children.Add(TranslationGhost);
-
-            PositionGhost.RenderTransform = group;
-
-        }
-
-
-
-
-
-        private void SizeGrid(object sender, EventArgs e)
-        {
-            foreach (var child in myGrid.Children.OfType<System.Windows.Shapes.Line>().ToList())
-            {
-                myGrid.Children.Remove(child);
-            }
-
             for (double x = 0; x <= myGrid.ActualWidth; x += step)
             {
                 myGrid.Children.Add(new System.Windows.Shapes.Line
@@ -138,8 +111,34 @@ namespace RobotInterface
                     StrokeThickness = 1
                 });
             }
+            Canvas.SetLeft(PositionGhost, myGrid.ActualWidth / 2);
+            Canvas.SetTop(PositionGhost, myGrid.ActualHeight / 2);
+
+            TransformGroup group = new TransformGroup();
+
+            group.Children.Add(RotationGhost);
+            group.Children.Add(TranslationGhost);
+
+            PositionGhost.RenderTransform = group;
+
         }
 
+
+
+
+
+        private void SizeGrid(object sender, EventArgs e)
+        {
+           
+
+        }
+
+        private Ellipse waypoint = new Ellipse
+        {
+            Width = 12,
+            Height = 12,
+            Fill = Brushes.Red
+        };
 
 
 
@@ -201,11 +200,15 @@ namespace RobotInterface
 
         private void SendWaypoint(float x, float Y)
         {
+          
+
             byte[] payload = new byte[8];
             byte[] array = BitConverter.GetBytes(x);
             Array.Copy(array, 0, payload, 0, 4);
             array = BitConverter.GetBytes(Y);
             Array.Copy(array, 0, payload, 4, 4);
+
+    
             
             UartEncodeAndSendMessage(0x0081, payload.Length, payload); //1.57   
             XW.Text = "XWaypoint :" + x;
@@ -281,6 +284,8 @@ namespace RobotInterface
                 return;
             if (!float.TryParse(KdX.Text, out float valeur8))
                 return;
+
+
          
 
             List<byte> values = new List<byte>();
@@ -381,6 +386,14 @@ namespace RobotInterface
             if (!float.TryParse(EcartInput.Text, out float Ecartinput1))
                 return;
 
+            if (!float.TryParse(AngKD.Text, out float AngKD1))
+
+                return;
+
+            if (!float.TryParse(AngKP.Text, out float AngKP1))
+
+                return;
+
 
 
 
@@ -390,10 +403,22 @@ namespace RobotInterface
             Input.AddRange(BitConverter.GetBytes(XInput1));
             Input.AddRange(BitConverter.GetBytes(YInput1));
             Input.AddRange(BitConverter.GetBytes(Ecartinput1));
+            Input.AddRange(BitConverter.GetBytes(AngKD1));
+            Input.AddRange(BitConverter.GetBytes(AngKP1));
+
+
+            List<byte> Input1 = new List<byte>();
+            Input1.AddRange(BitConverter.GetBytes(AngKD1));
+            Input1.AddRange(BitConverter.GetBytes(AngKP1));
+
 
             byte[] ThetaTab = Input.ToArray();
 
+            byte[] ThetaTab1 = Input1.ToArray();
+
             UartEncodeAndSendMessage(0x81, ThetaTab.Length, ThetaTab);
+
+            UartEncodeAndSendMessage(0x83, ThetaTab1.Length, ThetaTab1);
 
         }
         private byte CalculateChecksum(int msgFunction, int msgPayloadLength, byte[] msgPayload)
@@ -568,7 +593,19 @@ namespace RobotInterface
                     float CorrDX = BitConverter.ToSingle(msgPayload, 36);
                     float erreurDMaxX = BitConverter.ToSingle(msgPayload, 40);
 
-                    float erreurT = BitConverter.ToSingle(msgPayload, 44);
+               
+
+                    asservSpeedDisplay.UpdatePolarSpeedErrorValues(erreurX, 0);
+                    asservSpeedDisplay.UpdatePolarSpeedCommandValues(CommandX, 0);
+                    asservSpeedDisplay.UpdatePolarSpeedCorrectionGains(KpX, 0, KiX, 0, KdX, 0);
+                    asservSpeedDisplay.UpdatePolarSpeedCorrectionValues(CorrPX, 0, CorrIX, 0, CorrDX, 0);
+                    asservSpeedDisplay.UpdatePolarSpeedCorrectionLimits(erreurPMaxX, 0, erreurIMaxX, 0, erreurDMaxX, 0);
+
+
+                    break;
+
+                case StateMessage.Corr_Pid_VariablesTheta:
+                         float erreurT = BitConverter.ToSingle(msgPayload, 44);
                     float CommandT = BitConverter.ToSingle(msgPayload, 48);
                     float KpT = BitConverter.ToSingle(msgPayload, 52);
                     float CorrPT = BitConverter.ToSingle(msgPayload, 56);
@@ -579,14 +616,6 @@ namespace RobotInterface
                     float KdT = BitConverter.ToSingle(msgPayload, 76);
                     float CorrDT = BitConverter.ToSingle(msgPayload, 80);
                     float erreurDMaxT = BitConverter.ToSingle(msgPayload, 84);
-
-                    asservSpeedDisplay.UpdatePolarSpeedErrorValues(erreurX, erreurT);
-                    asservSpeedDisplay.UpdatePolarSpeedCommandValues(CommandX, CommandT);
-                    asservSpeedDisplay.UpdatePolarSpeedCorrectionGains(KpX, KpT, KiX, KiT, KdX, KdT);
-                    asservSpeedDisplay.UpdatePolarSpeedCorrectionValues(CorrPX, CorrPT, CorrIX, CorrIT, CorrDX, CorrDT);
-                    asservSpeedDisplay.UpdatePolarSpeedCorrectionLimits(erreurPMaxX, erreurPMaxT, erreurIMaxX, erreurIMaxT, erreurDMaxX, erreurDMaxT);
-
-
                     break;
 
                 case StateMessage.Ghost:
@@ -612,6 +641,10 @@ namespace RobotInterface
 
 
                     break;
+                case StateMessage.ecart:
+                    Ellipse(BitConverter.ToSingle(msgPayload, 0), BitConverter.ToSingle(msgPayload, 4));
+
+                    break;
 
             }
 
@@ -621,29 +654,81 @@ namespace RobotInterface
 
         private void RotateRobot(double theta)
         {
+            double nouvelleAngle = -theta;
+
             DoubleAnimation animation = new DoubleAnimation
             {
-                To = -theta,
-                Duration = TimeSpan.FromMilliseconds(100)
+                To = nouvelleAngle,
+                Duration = TimeSpan.FromMilliseconds(100),
+              
             };
 
             RotationGhost.BeginAnimation(
                 RotateTransform.AngleProperty,
                 animation);
 
-            lastAngle = -theta;
+            lastAngle = nouvelleAngle;
         }
 
-        private void Avance(double x, double y )
+        private void Avance(double x, double y)
         {
+            const double pixelsParMetre = 50;
 
+            double nouvelleX = x * pixelsParMetre;
+            double nouvelleY = -y * pixelsParMetre;
 
+            DoubleAnimation animationX = new DoubleAnimation
+            {
+                To = nouvelleX,
+                Duration = TimeSpan.FromMilliseconds(25)
+            };
 
+            DoubleAnimation animationY = new DoubleAnimation
+            {
+                To = nouvelleY,
+                Duration = TimeSpan.FromMilliseconds(25)
+            };
+
+            TranslationGhost.BeginAnimation(
+                TranslateTransform.XProperty,
+                animationX);
+
+            TranslationGhost.BeginAnimation(
+                TranslateTransform.YProperty,
+                animationY);
+        }
+
+        private void Ellipse(double x, double y)
+        {
             double pixelsParMetre = 50;
 
-            TranslationGhost.X = x * pixelsParMetre;
-            TranslationGhost.Y = -y * pixelsParMetre;
+            // Si un point existe déjà, on le supprime
+            if (waypointPoint != null)
+            {
+                myGrid.Children.Remove(waypointPoint);
+            }
+
+            // Création du nouveau point
+            waypointPoint = new Ellipse
+            {
+                Width = 10,
+                Height = 10,
+                Fill = Brushes.Red
+            };
+
+            double pixelX = myGrid.ActualWidth / 2 + x * pixelsParMetre;
+            double pixelY = myGrid.ActualHeight / 2 - y * pixelsParMetre;
+
+            Canvas.SetLeft(waypointPoint, pixelX - waypointPoint.Width / 2);
+            Canvas.SetTop(waypointPoint, pixelY - waypointPoint.Height / 2);
+
+            myGrid.Children.Add(waypointPoint);
         }
+
+
+
+
+
 
 
 
@@ -661,8 +746,10 @@ namespace RobotInterface
             Encodeur = 0x0061,
             PID_Verifiy= 0x0068,
             Corr_Pid_Variables = 0x0069,
+            Corr_Pid_VariablesTheta = 0x0070,
             Ghost = 0x0081,
             GhostLong = 0x0082,
+            ecart = 0x0083,
 
 
 

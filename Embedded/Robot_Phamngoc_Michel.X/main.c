@@ -30,9 +30,10 @@ int Capteur, etape;
 //unsigned char payload[3];
 //unsigned char payload[]={0,0,0};
 
- float payload = 45.55;
- char buffer[4];
+float payload = 45.55;
+char buffer[4];
 int counter = 0;
+unsigned char stateRobot = 0;
 
 
 int main(void) {
@@ -43,7 +44,7 @@ int main(void) {
     InitTimer1();
     InitTimer4();
     InitUART();
-    InitTimer23();
+    //InitTimer23();
     InitQEI1();
     InitQEI2();
 
@@ -53,28 +54,13 @@ int main(void) {
    
     
  
-    SetupPidAsservissement(&robotState.PidX,7,140,0,10,200,0);
-    SetupPidAsservissement(&robotState.PidTheta,7,140,0,10,200,0);
+   // SetupPidAsservissement(&robotState.PidX,7,140,0,10,200,0);
+    //SetupPidAsservissement(&robotState.PidTheta,7,140,0,10,200,0);
 
     while (1) {
-//     PWMSetSpeedConsignePolaire(1,0);
-//        __delay32(3000);
-//        PWMSetSpeedConsignePolaire(0,0);
-//         __delay32(3000);
-        
-     //RotationGhost();
-       //   __delay32(3000);
-      
+
     
-        
-        //***************QEI****************
-        // SendMessageDirect((unsigned char*) "Bonjour", 7);
-       //getBytesFromFloat(buffer,0,payload);
-       
-//        UartEncodeAndSendMessage(0x67, 8,  buffer );
-//        __delay32(40000);
-            
-    
+
 
         //*******************************************TP3
 
@@ -96,80 +82,80 @@ int main(void) {
    
 
 
-        if (ADCIsConversionFinished()) { //fin de l'aquisition du convertisseur
-            ADCClearConversionFinishedFlag(); // on enleve le flag pour pouvoir faire une nouvelle conversion
-            unsigned int * result = ADCGetResult(); //création d'un pointeur pour récupérer les données 
-            float volts = ((float) result [0])* 3.3 / 4096; //     n   olt
-            robotState.distanceTelemetreGauche1 = 34 / volts - 5; //volt to distance
-            volts = ((float) result [1])* 3.3 / 4096;
-            robotState.distanceTelemetreGauche = 34 / volts - 5; //volt to distance
-            volts = ((float) result [2])* 3.3 / 4096;
-            robotState.distanceTelemetreCentre = 34 / volts - 5;
-            volts = ((float) result [3])* 3.3 / 4096;
-            robotState.distanceTelemetreDroit = 34 / volts - 5; //zizi + zizi = zizi¨2
-            volts = ((float) result [4])* 3.3 / 4096;
-            robotState.distanceTelemetreDroit1 = 34 / volts - 5;
-
-            
-            
-                        if (counter++ % 50 == 0) {
-                            // UartEncodeAndSendMessage(0x80, 7, payload);
-                            unsigned char payload2[12];
-
-
-                            getBytesFromFloat(payload2,0,robotState.distanceTelemetreGauche) ;
-                            getBytesFromFloat(payload2,4,robotState.distanceTelemetreCentre) ;
-                            getBytesFromFloat(payload2,8,robotState.distanceTelemetreDroit) ;
-                          
-
-                            UartEncodeAndSendMessage(0x30, 12, payload2);
-                        }  
-
-            if (robotState.distanceTelemetreGauche1 < 30) {
-                LED_BLANCHE_1 = 1;
-                Capteur = Capteur | 0x10;
-            } else {
-                LED_BLANCHE_1 = 0;
-                Capteur = Capteur & 0b01111;
-            }
-            if (robotState.distanceTelemetreGauche < 32) {
-                LED_BLEUE_1 = 1;
-                Capteur = Capteur | 0b01000;
-            } else {
-                LED_BLEUE_1 = 0;
-                Capteur = Capteur & 0b10111;
-            }
-            if (robotState.distanceTelemetreCentre < 40) {
-                LED_ORANGE_1 = 1;
-                Capteur = Capteur | 0b00100;
-            } else {
-                LED_ORANGE_1 = 0;
-                Capteur = Capteur & 0b11011;
-            }
-            if (robotState.distanceTelemetreDroit < 32) {
-                LED_ROUGE_1 = 1;
-                Capteur = Capteur | 0b00010;
-            } else {
-                LED_ROUGE_1 = 0;
-                Capteur = Capteur & 0b11101;
-            }
-            if (robotState.distanceTelemetreDroit1 < 30) {
-                LED_VERTE_1 = 1;
-                Capteur = Capteur | 0b00001;
-            } else {
-                LED_VERTE_1 = 0;
-                Capteur = Capteur & 0b11110;
-            }
-            if (robotState.distanceTelemetreCentre > 35 && robotState.distanceTelemetreGauche > 20 && robotState.distanceTelemetreDroit > 20 && robotState.distanceTelemetreDroit1 > 20 && robotState.distanceTelemetreGauche1 > 20) {
-                Capteur = 0b10001;
-            }
-        }
+//        if (ADCIsConversionFinished()) { //fin de l'aquisition du convertisseur
+//            ADCClearConversionFinishedFlag(); // on enleve le flag pour pouvoir faire une nouvelle conversion
+//            unsigned int * result = ADCGetResult(); //création d'un pointeur pour récupérer les données 
+//            float volts = ((float) result [0])* 3.3 / 4096; //     n   olt
+//            robotState.distanceTelemetreGauche1 = 34 / volts - 5; //volt to distance
+//            volts = ((float) result [1])* 3.3 / 4096;
+//            robotState.distanceTelemetreGauche = 34 / volts - 5; //volt to distance
+//            volts = ((float) result [2])* 3.3 / 4096;
+//            robotState.distanceTelemetreCentre = 34 / volts - 5;
+//            volts = ((float) result [3])* 3.3 / 4096;
+//            robotState.distanceTelemetreDroit = 34 / volts - 5; //zizi + zizi = zizi¨2
+//            volts = ((float) result [4])* 3.3 / 4096;
+//            robotState.distanceTelemetreDroit1 = 34 / volts - 5;
+//
+//            
+//            
+//                        if (counter++ % 50 == 0) {
+//                            // UartEncodeAndSendMessage(0x80, 7, payload);
+//                            unsigned char payload2[12];
+//
+//
+//                            getBytesFromFloat(payload2,0,robotState.distanceTelemetreGauche) ;
+//                            getBytesFromFloat(payload2,4,robotState.distanceTelemetreCentre) ;
+//                            getBytesFromFloat(payload2,8,robotState.distanceTelemetreDroit) ;
+//                          
+//
+//                            UartEncodeAndSendMessage(0x30, 12, payload2);
+//                        }  
+//
+//            if (robotState.distanceTelemetreGauche1 < 30) {
+//                LED_BLANCHE_1 = 1;
+//                Capteur = Capteur | 0x10;
+//            } else {
+//                LED_BLANCHE_1 = 0;
+//                Capteur = Capteur & 0b01111;
+//            }
+//            if (robotState.distanceTelemetreGauche < 32) {
+//                LED_BLEUE_1 = 1;
+//                Capteur = Capteur | 0b01000;
+//            } else {
+//                LED_BLEUE_1 = 0;
+//                Capteur = Capteur & 0b10111;
+//            }
+//            if (robotState.distanceTelemetreCentre < 40) {
+//                LED_ORANGE_1 = 1;
+//                Capteur = Capteur | 0b00100;
+//            } else {
+//                LED_ORANGE_1 = 0;
+//                Capteur = Capteur & 0b11011;
+//            }
+//            if (robotState.distanceTelemetreDroit < 32) {
+//                LED_ROUGE_1 = 1;
+//                Capteur = Capteur | 0b00010;
+//            } else {
+//                LED_ROUGE_1 = 0;
+//                Capteur = Capteur & 0b11101;
+//            }
+//            if (robotState.distanceTelemetreDroit1 < 30) {
+//                LED_VERTE_1 = 1;
+//                Capteur = Capteur | 0b00001;
+//            } else {
+//                LED_VERTE_1 = 0;
+//                Capteur = Capteur & 0b11110;
+//            }
+//            if (robotState.distanceTelemetreCentre > 35 && robotState.distanceTelemetreGauche > 20 && robotState.distanceTelemetreDroit > 20 && robotState.distanceTelemetreDroit1 > 20 && robotState.distanceTelemetreGauche1 > 20) {
+//                Capteur = 0b10001;
+//            }
+//        }
     }
 
-}
 
 
-unsigned char stateRobot = 0;//change??
+
+
 
 void CompteurEtape(void) {
 
@@ -390,3 +376,4 @@ void SetNextRobotStateInAutomaticMode() {
         stateRobot = nextStateRobot;
 }
 
+}

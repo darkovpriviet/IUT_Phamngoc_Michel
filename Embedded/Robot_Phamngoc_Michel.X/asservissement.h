@@ -14,6 +14,7 @@
 #define AccelerationLineaire 0.2
 #define incrementAng 0.2
 #define incrementLine 0.2
+#define ATTENTE 0 
 #define ROTATION 1
 #define TRANSLATION 2
 
@@ -32,52 +33,18 @@ double erreur;
 double corrP;
 double corrI;
 double corrD;
+double vitesse;
 }PidCorrector;
 
-typedef struct _Ghost
-{
- double ThetaGhost;
- double X;
- double Y;
- double ThetaWay;
- double ThetaRestant;
- double ThetaArret;
- double incrementTheta;
- double Distance;
- double DisPro;
- double HypoWay;
- double X_Ghost;
- double Y_Ghost;
- double X_Droite;
- double Y_Droite;
- double ProjeteY; 
- double Hypotenus;
-
- double ecartangle;
- double DisPar;
- double longRestant;
-
- 
- 
-
-} Ghost;
-extern Ghost Rotation;
-extern Ghost longitunal;
-extern void Longueur();
-extern void RotationGhost();
-extern void EtatGhost();
-void Send_Ghost();
-void Send_GhostLong();
-extern double VitesseTheta;
 extern PidCorrector PidX;
 extern PidCorrector PidTheta;
-extern float saveSpeed;
-extern float saveSpeed_1;
-extern int etapeghost;
-double Projete( double xA, double yA,double bx, double by);
-void Distance_to_waypoint();
+extern PidCorrector PDAng;
+
+
+
 void TransmitAsserv();
 void UpdateAsservissement();
+void UpdateAsservissement1();
 double Correcteur(volatile PidCorrector* PidCorr, double erreur);
 void PWMSetSpeedConsignePolaire(float vitesseLineaire, float vitesseAngulaire);
 void SetupPidAsservissement(volatile PidCorrector* PidCorr, double Kp, double Ki, double Kd, double proportionelleMax, double integralMax,double deriveeMax);

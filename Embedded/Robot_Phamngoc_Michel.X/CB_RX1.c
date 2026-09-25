@@ -66,7 +66,7 @@ int dataSize;
         dataSize = cbRx1Head - cbRx1Tail;
     else
         dataSize = CBRX1_BUFFER_SIZE - (cbRx1Tail - cbRx1Head);
-return dataSize;
+                return dataSize;
 }
 int CB_RX1_GetRemainingSize(void)
 {

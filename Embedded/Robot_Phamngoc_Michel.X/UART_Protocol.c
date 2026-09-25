@@ -9,7 +9,7 @@
 #include "ToolBox.h"
 #include "Robot.h"
 #include "Utilities.h"
-
+#include "Ghost.h"
 int msgDecodedFunction = 0;
 int msgDecodedPayloadLength = 0;
 unsigned char msgDecodedPayload[128];
@@ -18,10 +18,12 @@ int receivedChecksum, calculatedChecksum = 0x00;
 int rcvState = 0;
 int autoControlActivated=0;
 PidCorrector PidX;
+PidCorrector PDAng;
 int etapeghost;
 float a;
 float b;
 float c;
+
 
 
 unsigned char UartCalculateChecksum(int msgFunction,
@@ -187,37 +189,57 @@ void UartProcessDecodedMessage(int function,
            
         case ROTATION_GHOST: 
             etapeghost=ROTATION;
-            Rotation.X =getFloatFromBytes(payload,0);
-            Rotation.Y =getFloatFromBytes(payload,4);
+            Rotation.X = getFloatFromBytes(payload,0);
+            Rotation.Y = getFloatFromBytes(payload,4);
+            Rotation.ecart =getFloatFromBytes(payload,8);
+            
+         
+            
+            
+            longitunal.HypoWay = sqrt(Rotation.X*Rotation.X +Rotation.Y*Rotation.Y);
+          
          
             
               if(Rotation.X==0){
                   
                 if(Rotation.Y<0)
-                    Rotation.ThetaWay=-M_PI/2;
-                else
-                    Rotation.ThetaWay=M_PI/2;
+                {
+                    Rotation.ThetaWay=-M_PI/2- Rotation.ecart ;
+                    Rotation.ecart = -M_PI/2;
+            
+                }
+                    else{
+                       Rotation.ThetaWay=M_PI/2 - Rotation.ecart  ;
+                        Rotation.ecart = M_PI/2;
+                    }
+                 
+                
             }
                     
          
   
-            if(Rotation.X>0)
-                Rotation.ThetaWay=atan(Rotation.Y/Rotation.X);
+            if(Rotation.X>0){
+                 Rotation.ThetaWay=atan(Rotation.Y/Rotation.X) - Rotation.ecart;
+                Rotation.ecart = atan(Rotation.Y/Rotation.X);
+            }
+               
             
             else if(Rotation.X<0){
                 if(Rotation.Y>0)
-                    Rotation.ThetaWay=M_PI+atan(Rotation.Y/Rotation.X);
-                else
-                    Rotation.ThetaWay=-M_PI+atan(Rotation.Y/Rotation.X);
+                {
+                     Rotation.ThetaWay=M_PI+atan(Rotation.Y/Rotation.X)- Rotation.ecart;
+                   Rotation.ecart=M_PI+atan(Rotation.Y/Rotation.X);
+                }
+                   
+                else{
+                    Rotation.ThetaWay=-M_PI+atan(Rotation.Y/Rotation.X - Rotation.ecart);
+                     Rotation.ecart =-M_PI+atan(Rotation.Y/Rotation.X);
+                }
+     
             }
-            
-       
-          
-            
-            Rotation.ecartangle = ModuloByAngle(Rotation.ThetaWay,getFloatFromBytes(payload,8))-Rotation.ThetaWay;
-            
-            
-            double R=40;
+           
+           Waypoint();
+   double R=40;
             B.x = R * cos(Rotation.ecartangle);
             B.y = R * sin(Rotation.ecartangle);
         /*    if ( Rotation.ecartangle == M_PI /2 | Rotation.ecartangle == -M_PI /2 ){
@@ -234,12 +256,12 @@ void UartProcessDecodedMessage(int function,
                 double save_angle =tan(Rotation.ecartangle);
                 B.x= B.y/tan(Rotation.ecartangle);
                         
-            }*/
-               
-               
-                
-               
-            
+            }*/          
+  break;
+  
+        case COMMAND_PD_ANG:
+              SetupPidAsservissement(&PDAng,getFloatFromBytes(payload,0),0,getFloatFromBytes(payload,4),10,400,200);
+    
             
             
             break;

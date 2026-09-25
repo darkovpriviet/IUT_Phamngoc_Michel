@@ -7,7 +7,7 @@
 #include "UART_Protocol.h"
 #include "QEI.h"
 #include "asservissement.h"
-
+#include "Ghost.h"
 //Initialisation d?un timer 16 bits
  unsigned long timestamp=0;
  float FCY = 60000000;
@@ -23,7 +23,7 @@ void InitTimer1(void) {
     //00 = 1:1 prescale value
     T1CONbits.TCS = 0; //clock source = internal clock
     //PR1 = 0x249F;
-    SetFreqTimer1(1000);
+    SetFreqTimer1(2000);
     IFS0bits.T1IF = 0; // Clear Timer Interrupt Flag
     IEC0bits.T1IE = 1; // Enable Timer interrupt
     T1CONbits.TON = 1; // Enable Timer
@@ -35,13 +35,13 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     PWMUpdateSpeed();
     ADC1StartConversionSequence();
    QEIUpdateData();  
-    //UpdateAsservissement();
-    EtatGhost();
+    UpdateAsservissement();
+  
     
     
-    Send_Ghost();
+    
      Distance_to_waypoint();
-  SendPositionData();
+    //SendPositionData();
     if(counterQ++%15==0){
   
     //TransmitAsserv();
@@ -60,7 +60,7 @@ void InitTimer4(void) {
     //00 = 1:1 prescale value
     T4CONbits.TCS = 0; //clock source = internal clock
     //PR4 = 0xEA60;
-    SetFreqTimer4(10000);
+    SetFreqTimer4(1000  );
     IFS1bits.T4IF = 0; // Clear Timer Interrupt Flag
     IEC1bits.T4IE = 1; // Enable Timer interrupt
     T4CONbits.TON = 1; // Enable Timer
@@ -70,9 +70,18 @@ void InitTimer4(void) {
 void __attribute__((interrupt, no_auto_psv)) _T4Interrupt(void) {
     IFS1bits.T4IF = 0;  
   
-    timestamp++;
-    OperatingSystemLoop();
-  
+    //timestamp++;
+    //OperatingSystemLoop();
+   EtatGhost();
+     
+      
+       if (counterQ >= 25)
+{
+    counterQ = 0;
+    Send_Ghost();
+}
+
+
 }
 
 
