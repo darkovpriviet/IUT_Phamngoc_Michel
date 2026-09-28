@@ -11,13 +11,13 @@
 
 #include "Ghost.h"
 
-Ghost Rotation;
+volatile Ghost Rotation;
 Point P;
 Point A;
 Point B;
 extern int etapeghost;
 Ghost longitunal;
-double VitesseTheta = 4;
+volatile double VitesseTheta = 2;
 double VitesseLineaire = 2;
 void RotationGhost() {
     
@@ -65,7 +65,8 @@ Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rota
        Rotation.X_Ghost=Rotation.X;
        Rotation.Y_Ghost=Rotation.Y;
        etapeghost=TRANSLATION;
-       Rotation.ecart=0;
+      
+      
        
 
 //       getBytesFromFloat(payload,48,Y);
@@ -79,8 +80,7 @@ Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rota
 
 void Longueur() {
 
-    
-            
+   
     longitunal.longRestant =  longitunal.HypoWay-longitunal.ThetaGhost;
     
     longitunal.ThetaArret = VitesseLineaire*VitesseLineaire /(2*AccelerationTheta);
@@ -120,36 +120,50 @@ void Longueur() {
        longitunal.X_Ghost =   longitunal.X_Ghost_depart + longitunal.ThetaGhost * cos(Rotation.ThetaGhost);
        longitunal.Y_Ghost = longitunal.Y_Ghost_depart + longitunal.ThetaGhost * sin(Rotation.ThetaGhost);
    
-    
+   
 //   UartEncodeAndSendMessage(0x81,72,payload);
     Send_GhostLong();
   
     
-  
     
     
    if(VitesseLineaire==0 && Abs(longitunal.longRestant) <0.01){
        longitunal.ThetaGhost = longitunal.HypoWay;
-     
-       
        longitunal.X_Ghost_depart= longitunal.X_Ghost;
        longitunal.Y_Ghost_depart = longitunal.Y_Ghost;
+       etapeghost=ATTENTE;
+       
       
  
-         etapeghost=ATTENTE;
-     
-    
-       
-       
-       
   
   }
 
 }
+
+void EtatGhost(){
+    
+    
+    switch(etapeghost){
+        
+        case ATTENTE: 
+             longitunal.ThetaGhost =0;
+             break;
+        case ROTATION:
+           RotationGhost();
+            break; 
+        
+        case TRANSLATION:
+            Longueur();
+            break; 
+        
+      
+    }
+    
+}
 void Waypoint(){
     float x,y;
-    x= longitunal.X_Ghost_depart +longitunal.HypoWay*cos(Rotation.ecart);
-    y= longitunal.Y_Ghost_depart +longitunal.HypoWay*sin(Rotation.ecart);
+    x= longitunal.X_Ghost_depart +longitunal.HypoWay*cos(Rotation.Waysave);
+    y= longitunal.Y_Ghost_depart +longitunal.HypoWay*sin(Rotation.Waysave);
     
     unsigned char payload [8];
     getBytesFromFloat(payload,0,x);
@@ -185,27 +199,6 @@ void Send_GhostLong(){
      UartEncodeAndSendMessage(0x82,24,payload);
 }
 
-void EtatGhost(){
-    
-    
-    switch(etapeghost){
-        
-        case ATTENTE: 
-             longitunal.ThetaGhost =0;
-             break;
-        case ROTATION:
-           RotationGhost();
-            
-            break; 
-        
-        case TRANSLATION:
-            Longueur();
-            break; 
-        
-        
-    }
-    
-}
 
 
 

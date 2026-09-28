@@ -1,7 +1,7 @@
 #ifndef ROBOT_H
 #define ROBOT_H
 #include "asservissement.h"
-#include "asservissement.c"
+
 typedef struct robotStateBITS {
 union {
 struct {

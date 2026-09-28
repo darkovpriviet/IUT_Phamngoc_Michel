@@ -204,13 +204,13 @@ void UartProcessDecodedMessage(int function,
                   
                 if(Rotation.Y<0)
                 {
-                    Rotation.ThetaWay=-M_PI/2- Rotation.ecart ;
-                    Rotation.ecart = -M_PI/2;
+                    Rotation.ThetaWay=-M_PI/2 - Rotation.ecart ;
+                    Rotation.Waysave = -M_PI/2;
             
                 }
                     else{
                        Rotation.ThetaWay=M_PI/2 - Rotation.ecart  ;
-                        Rotation.ecart = M_PI/2;
+                        Rotation.Waysave = M_PI/2;
                     }
                  
                 
@@ -220,7 +220,7 @@ void UartProcessDecodedMessage(int function,
   
             if(Rotation.X>0){
                  Rotation.ThetaWay=atan(Rotation.Y/Rotation.X) - Rotation.ecart;
-                Rotation.ecart = atan(Rotation.Y/Rotation.X);
+                Rotation.Waysave = atan(Rotation.Y/Rotation.X);
             }
                
             
@@ -228,12 +228,12 @@ void UartProcessDecodedMessage(int function,
                 if(Rotation.Y>0)
                 {
                      Rotation.ThetaWay=M_PI+atan(Rotation.Y/Rotation.X)- Rotation.ecart;
-                   Rotation.ecart=M_PI+atan(Rotation.Y/Rotation.X);
+                   Rotation.Waysave=M_PI+atan(Rotation.Y/Rotation.X);
                 }
                    
                 else{
                     Rotation.ThetaWay=-M_PI+atan(Rotation.Y/Rotation.X - Rotation.ecart);
-                     Rotation.ecart =-M_PI+atan(Rotation.Y/Rotation.X);
+                     Rotation.Waysave =-M_PI+atan(Rotation.Y/Rotation.X);
                 }
      
             }
@@ -261,9 +261,7 @@ void UartProcessDecodedMessage(int function,
   
         case COMMAND_PD_ANG:
               SetupPidAsservissement(&PDAng,getFloatFromBytes(payload,0),0,getFloatFromBytes(payload,4),10,400,200);
-    
-            
-            
+              
             break;
         default:
             break;

@@ -202,14 +202,16 @@ namespace RobotInterface
         {
           
 
-            byte[] payload = new byte[8];
+            byte[] payload = new byte[12];
             byte[] array = BitConverter.GetBytes(x);
             Array.Copy(array, 0, payload, 0, 4);
             array = BitConverter.GetBytes(Y);
             Array.Copy(array, 0, payload, 4, 4);
+            array = BitConverter.GetBytes(0);
+            Array.Copy(array, 0, payload, 8, 4);
 
-    
-            
+
+
             UartEncodeAndSendMessage(0x0081, payload.Length, payload); //1.57   
             XW.Text = "XWaypoint :" + x;
             YW.Text = "YWaypoint :" + Y;
@@ -403,13 +405,12 @@ namespace RobotInterface
             Input.AddRange(BitConverter.GetBytes(XInput1));
             Input.AddRange(BitConverter.GetBytes(YInput1));
             Input.AddRange(BitConverter.GetBytes(Ecartinput1));
-            Input.AddRange(BitConverter.GetBytes(AngKD1));
-            Input.AddRange(BitConverter.GetBytes(AngKP1));
+       
 
 
             List<byte> Input1 = new List<byte>();
-            Input1.AddRange(BitConverter.GetBytes(AngKD1));
             Input1.AddRange(BitConverter.GetBytes(AngKP1));
+            Input1.AddRange(BitConverter.GetBytes(AngKD1));
 
 
             byte[] ThetaTab = Input.ToArray();
@@ -592,20 +593,7 @@ namespace RobotInterface
                     float KdX = BitConverter.ToSingle(msgPayload, 32);
                     float CorrDX = BitConverter.ToSingle(msgPayload, 36);
                     float erreurDMaxX = BitConverter.ToSingle(msgPayload, 40);
-
-               
-
-                    asservSpeedDisplay.UpdatePolarSpeedErrorValues(erreurX, 0);
-                    asservSpeedDisplay.UpdatePolarSpeedCommandValues(CommandX, 0);
-                    asservSpeedDisplay.UpdatePolarSpeedCorrectionGains(KpX, 0, KiX, 0, KdX, 0);
-                    asservSpeedDisplay.UpdatePolarSpeedCorrectionValues(CorrPX, 0, CorrIX, 0, CorrDX, 0);
-                    asservSpeedDisplay.UpdatePolarSpeedCorrectionLimits(erreurPMaxX, 0, erreurIMaxX, 0, erreurDMaxX, 0);
-
-
-                    break;
-
-                case StateMessage.Corr_Pid_VariablesTheta:
-                         float erreurT = BitConverter.ToSingle(msgPayload, 44);
+                    float erreurT = BitConverter.ToSingle(msgPayload, 44);
                     float CommandT = BitConverter.ToSingle(msgPayload, 48);
                     float KpT = BitConverter.ToSingle(msgPayload, 52);
                     float CorrPT = BitConverter.ToSingle(msgPayload, 56);
@@ -616,7 +604,17 @@ namespace RobotInterface
                     float KdT = BitConverter.ToSingle(msgPayload, 76);
                     float CorrDT = BitConverter.ToSingle(msgPayload, 80);
                     float erreurDMaxT = BitConverter.ToSingle(msgPayload, 84);
+
+
+                    asservSpeedDisplay.UpdatePolarSpeedErrorValues(erreurX, erreurT);
+                    asservSpeedDisplay.UpdatePolarSpeedCommandValues(CommandX, CommandT);
+                    asservSpeedDisplay.UpdatePolarSpeedCorrectionGains(KpX, KpT, KiX, KiT, KdX, KdT);
+                    asservSpeedDisplay.UpdatePolarSpeedCorrectionValues(CorrPX, CorrPT, CorrIX, CorrIT, CorrDX, CorrDT);
+                    asservSpeedDisplay.UpdatePolarSpeedCorrectionLimits(erreurPMaxX, erreurPMaxT, erreurIMaxX, erreurIMaxT, erreurDMaxX, erreurDMaxT);
+
+
                     break;
+
 
                 case StateMessage.Ghost:
 
@@ -629,8 +627,6 @@ namespace RobotInterface
                     RotateRobot(BitConverter.ToSingle(msgPayload, 8));
                     //TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 12).ToString("N3"); 
                     //TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 16).ToString("N3");
-
-
 
 
                     break;
@@ -746,7 +742,6 @@ namespace RobotInterface
             Encodeur = 0x0061,
             PID_Verifiy= 0x0068,
             Corr_Pid_Variables = 0x0069,
-            Corr_Pid_VariablesTheta = 0x0070,
             Ghost = 0x0081,
             GhostLong = 0x0082,
             ecart = 0x0083,

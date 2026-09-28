@@ -9,9 +9,8 @@
 #include "Utilities.h"
 #include "math.h"
 #include "Ghost.h"
-
-
-
+ extern volatile ROBOT_STATE_BITS robotState;
+ extern volatile double VitesseTheta;
 
 
 
@@ -74,42 +73,57 @@ robotState.CorrectionVitesseAngulaire = Correcteur(&robotState.PidTheta, robotSt
 
 PWMSetSpeedCommandPolaire(robotState.CorrectionVitesseLineaire,robotState.CorrectionVitesseAngulaire);
     
-//TransmitAsserv(robotState.PidX,0x69);
-//TransmitAsserv(robotState.PidTheta,0x70);
+TransmitAsserv();
 }
 
 
-void UpdateAsservissement1()
+void UpdateAsservissementGhost()
 {
-//.erreur = robotState.saveSpeed_Lineaire - robotState.vitesseLineaireFromOdometry;
-robotState.PDAng.erreur = robotState.saveSpeed_Angulaire - robotState.vitesseAngulaireFromOdometry;
+//robotState.PDAng.erreur = robotState.saveSpeed_Lineaire - robotState.vitesseLineaireFromOdometry;
+
+robotState.PDAng.erreur = 0.5 - robotState.vitesseAngulaireFromOdometry;
+
+
 //robotState.CorrectionVitesseLineaire =Correcteur(&robotState.PidX, robotState.PidX.erreur);
-robotState.PDAng.CorrectionVitesseAngulaire = Correcteur(&robotState.PDAng, robotState.PDAng.erreur);
+robotState.CorrectionVitesseAngulaire = Correcteur(&robotState.PDAng, robotState.PDAng.erreur);
 
 PWMSetSpeedCommandPolaire(robotState.CorrectionVitesseLineaire,robotState.CorrectionVitesseAngulaire);
     
-//TransmitAsserv(robotState.PidX,0x69);
-//TransmitAsserv(robotState.PidTheta,0x70);
+//TransmitAsserv();
 }
 
 
 
-void TransmitAsserv(volatile PidCorrector* PidCorr, int code)
+
+
+void TransmitAsserv()
 {
-    unsigned char payload[44];
+    unsigned char payload[88];
     
-    getBytesFromFloat(payload, 0,  PidCorr->erreur);
-    getBytesFromFloat(payload, 4,  PidCorr->vitesse);
-    getBytesFromFloat(payload, 8,  PidCorr->Kp);
-    getBytesFromFloat(payload, 12, PidCorr->corrP);
-    getBytesFromFloat(payload, 16, PidCorr->erreurProportionelleMax);
-    getBytesFromFloat(payload, 20, PidCorr->Ki);
-    getBytesFromFloat(payload, 24, PidCorr->corrI);
-    getBytesFromFloat(payload, 28, PidCorr->erreurIntegraleMax);
-    getBytesFromFloat(payload, 32, PidCorr->Kd);
-    getBytesFromFloat(payload, 36, PidCorr->corrD);
-    getBytesFromFloat(payload, 40, PidCorr->erreurDeriveeMax);
-    UartEncodeAndSendMessage(code,44,payload);
+    getBytesFromFloat(payload, 0,  robotState.PidX.erreur);
+    getBytesFromFloat(payload, 4,  robotState.vitesseLineaireFromOdometry);
+    getBytesFromFloat(payload, 8,  robotState.PidX.Kp);
+    getBytesFromFloat(payload, 12, robotState.PidX.corrP);
+    getBytesFromFloat(payload, 16, robotState.PidX.erreurProportionelleMax);
+    getBytesFromFloat(payload, 20, robotState.PidX.Ki);
+    getBytesFromFloat(payload, 24, robotState.PidX.corrI);
+    getBytesFromFloat(payload, 28, robotState.PidX.erreurIntegraleMax);
+    getBytesFromFloat(payload, 32, robotState.PidX.Kd);
+    getBytesFromFloat(payload, 36, robotState.PidX.corrD);
+    getBytesFromFloat(payload, 40, robotState.PidX.erreurDeriveeMax);
+
+    getBytesFromFloat(payload, 44, robotState.PidTheta.erreur);
+    getBytesFromFloat(payload, 48, robotState.vitesseAngulaireFromOdometry);
+    getBytesFromFloat(payload, 52, robotState.PidTheta.Kp);
+    getBytesFromFloat(payload, 56, robotState.PidTheta.corrP);
+    getBytesFromFloat(payload, 60, robotState.PidTheta.erreurProportionelleMax);
+    getBytesFromFloat(payload, 64, robotState.PidTheta.Ki);
+    getBytesFromFloat(payload, 68, robotState.PidTheta.corrI);
+    getBytesFromFloat(payload, 72, robotState.PidTheta.erreurIntegraleMax);
+    getBytesFromFloat(payload, 76, robotState.PidTheta.Kd);
+    getBytesFromFloat(payload, 80, robotState.PidTheta.corrD);
+    getBytesFromFloat(payload, 84, robotState.PidTheta.erreurDeriveeMax); 
+    UartEncodeAndSendMessage(0x69,88,payload);
 
 }
 

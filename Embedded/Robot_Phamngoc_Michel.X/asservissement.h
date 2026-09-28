@@ -39,12 +39,13 @@ double vitesse;
 extern PidCorrector PidX;
 extern PidCorrector PidTheta;
 extern PidCorrector PDAng;
+extern PidCorrector PDLinear;
 
 
 
 void TransmitAsserv();
 void UpdateAsservissement();
-void UpdateAsservissement1();
+void UpdateAsservissementGhost();
 double Correcteur(volatile PidCorrector* PidCorr, double erreur);
 void PWMSetSpeedConsignePolaire(float vitesseLineaire, float vitesseAngulaire);
 void SetupPidAsservissement(volatile PidCorrector* PidCorr, double Kp, double Ki, double Kd, double proportionelleMax, double integralMax,double deriveeMax);

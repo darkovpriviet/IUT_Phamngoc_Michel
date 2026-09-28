@@ -1,5 +1,6 @@
 build/default/production/asservissement.o: asservissement.c \
- asservissement.h UART_Protocol.h Robot.h ToolBox.h QEI.h Utilities.h
+ asservissement.h UART_Protocol.h Robot.h asservissement.c ToolBox.h \
+ QEI.h Utilities.h Ghost.h
 
 asservissement.h:
 
@@ -7,8 +8,12 @@ UART_Protocol.h:
 
 Robot.h:
 
+asservissement.c:
+
 ToolBox.h:
 
 QEI.h:
 
 Utilities.h:
+
+Ghost.h:

@@ -12,6 +12,7 @@
  unsigned long timestamp=0;
  float FCY = 60000000;
  int counterQ=0;
+ 
 
 void InitTimer1(void) {
     //Timer1 pour horodater les mesures (1ms)
@@ -35,7 +36,8 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     PWMUpdateSpeed();
     ADC1StartConversionSequence();
    QEIUpdateData();  
-    UpdateAsservissement();
+    //UpdateAsservissement();
+ 
   
     
     
@@ -60,7 +62,7 @@ void InitTimer4(void) {
     //00 = 1:1 prescale value
     T4CONbits.TCS = 0; //clock source = internal clock
     //PR4 = 0xEA60;
-    SetFreqTimer4(1000  );
+    SetFreqTimer4(1000);
     IFS1bits.T4IF = 0; // Clear Timer Interrupt Flag
     IEC1bits.T4IE = 1; // Enable Timer interrupt
     T4CONbits.TON = 1; // Enable Timer
@@ -72,8 +74,8 @@ void __attribute__((interrupt, no_auto_psv)) _T4Interrupt(void) {
   
     //timestamp++;
     //OperatingSystemLoop();
-   EtatGhost();
-     
+    EtatGhost();
+    UpdateAsservissementGhost();
       
        if (counterQ >= 25)
 {

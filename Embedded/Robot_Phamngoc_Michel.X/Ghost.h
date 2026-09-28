@@ -38,12 +38,13 @@ typedef struct _Ghost
  double X_Ghost_depart;
  double Y_Ghost_depart;
  double ecart;
+ double Waysave;
 
  
  
 
 } Ghost;
-extern Ghost Rotation;
+extern volatile Ghost Rotation;
 extern Ghost longitunal;
 extern void Longueur();
 extern void RotationGhost();
