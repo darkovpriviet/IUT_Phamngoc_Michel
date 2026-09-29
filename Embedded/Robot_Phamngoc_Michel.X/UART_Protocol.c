@@ -23,6 +23,7 @@ int etapeghost;
 float a;
 float b;
 float c;
+float save_1;
 
 
 
@@ -260,7 +261,8 @@ void UartProcessDecodedMessage(int function,
   break;
   
         case COMMAND_PD_ANG:
-              SetupPidAsservissement(&PDAng,getFloatFromBytes(payload,0),0,getFloatFromBytes(payload,4),10,400,200);
+              save_1=getFloatFromBytes(payload,0);
+              SetupPidAsservissement(&robotState.PDAng,getFloatFromBytes(payload,0),0,getFloatFromBytes(payload,4),100,400,200);
               
             break;
         default:

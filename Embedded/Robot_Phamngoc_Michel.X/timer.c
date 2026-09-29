@@ -13,6 +13,7 @@
  float FCY = 60000000;
  int counterQ=0;
  
+ 
 
 void InitTimer1(void) {
     //Timer1 pour horodater les mesures (1ms)
@@ -36,6 +37,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     PWMUpdateSpeed();
     ADC1StartConversionSequence();
    QEIUpdateData();  
+   UpdateAngleUnwrap();
     //UpdateAsservissement();
  
   
@@ -43,7 +45,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     
     
      Distance_to_waypoint();
-    //SendPositionData();
+     SendPositionData();
     if(counterQ++%15==0){
   
     //TransmitAsserv();
