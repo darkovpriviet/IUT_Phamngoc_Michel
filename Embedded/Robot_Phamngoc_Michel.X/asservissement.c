@@ -12,7 +12,7 @@
  extern volatile ROBOT_STATE_BITS robotState;
  extern volatile double VitesseTheta;
  static double angleOdoPrecedent = 0.0;
- static double angleOdoCumule = 0.0;
+
 
 
 
@@ -81,10 +81,11 @@ TransmitAsserv();
 
 void UpdateAsservissementGhost()
 {
+      UpdateAngleUnwrap();
 //robotState.PDAng.erreur = robotState.saveSpeed_Lineaire - robotState.vitesseLineaireFromOdometry;
-//robotState.PDAng.erreur= 4*M_PI - angleOdoCumule;
+robotState.PDAng.erreur= 4*M_PI - robotState.angleOdoCumule;
 
-robotState.PDAng.erreur=Rotation.ThetaWay-robotState.angleRadianFromOdometry;
+//robotState.PDAng.erreur=Rotation.ThetaWay-robotState.angleRadianFromOdometry;
 
 
 //robotState.PidTheta.erreur = VitesseTheta - robotState.vitesseAngulaireFromOdometry;
@@ -113,7 +114,7 @@ void UpdateAngleUnwrap()
     if (delta < -M_PI)
         delta += 2.0 * M_PI;
 
-    angleOdoCumule += delta;
+    robotState.angleOdoCumule += delta;
 
     angleOdoPrecedent = robotState.angleRadianFromOdometry;
 }

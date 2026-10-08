@@ -16,6 +16,7 @@ Point P;
 Point A;
 Point B;
 extern int etapeghost;
+
 Ghost longitunal;
 volatile double VitesseTheta = 2;
 double VitesseLineaire = 2;
@@ -179,7 +180,7 @@ void Send_Ghost(){
    getBytesFromFloat(payload, 8,Rotation.ThetaGhost *180/M_PI);
    getBytesFromFloat(payload,12,Rotation.HypoWay);
    getBytesFromFloat(payload,16, longitunal.ThetaGhost);
-   getBytesFromFloat(payload, 20,Rotation.ThetaGhost );
+   getBytesFromFloat(payload, 20,Rotation.ThetaGhost);
    
   
    

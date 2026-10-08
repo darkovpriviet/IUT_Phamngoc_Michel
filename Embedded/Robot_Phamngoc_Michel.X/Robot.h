@@ -34,6 +34,7 @@ PidCorrector PidTheta;
 PidCorrector PDAng;
 float saveSpeed_Lineaire;
 float saveSpeed_Angulaire;
+double angleOdoCumule;
 };
 };
 } ROBOT_STATE_BITS;

@@ -1,4 +1,5 @@
 #include <xc.h>
+#include <math.h>
 #include "timer.h"
 #include "IO.h"
 #include"PWM.h"
@@ -8,10 +9,14 @@
 #include "QEI.h"
 #include "asservissement.h"
 #include "Ghost.h"
+#include "Robot.h"
 //Initialisation d?un timer 16 bits
+ extern volatile ROBOT_STATE_BITS robotState;
  unsigned long timestamp=0;
  float FCY = 60000000;
  int counterQ=0;
+
+
  
  
 
@@ -37,7 +42,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     PWMUpdateSpeed();
     ADC1StartConversionSequence();
    QEIUpdateData();  
-   UpdateAngleUnwrap();
+   
     //UpdateAsservissement();
  
   
@@ -78,7 +83,7 @@ void __attribute__((interrupt, no_auto_psv)) _T4Interrupt(void) {
     //OperatingSystemLoop();
     EtatGhost();
     UpdateAsservissementGhost();
-      
+     
        if (counterQ >= 25)
 {
     counterQ = 0;

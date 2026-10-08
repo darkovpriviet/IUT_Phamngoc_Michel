@@ -23,6 +23,8 @@ float QeiGauchePosition_T_1;
 float QeiGauchePosition;
 float delta_d;
 float delta_g;
+float distanceEncodeurDroit;
+volatile float distanceEncodeurGauche;
 
 void InitQEI1() {
     QEI1IOCbits.SWPAB = 1; //QEAx and QEBx are swapped
@@ -56,6 +58,9 @@ void QEIUpdateData() {
     //Calcul des deltas de position
     delta_d = QeiDroitPosition - QeiDroitPosition_T_1;
     delta_g = QeiGauchePosition - QeiGauchePosition_T_1;
+    
+    distanceEncodeurDroit += Abs(delta_d);
+    distanceEncodeurGauche += Abs(delta_g);
     //Calcul des vitesses
     //attention a remultiplier par la frequence d echantillonnage
     robotState.vitesseDroitFromOdometry = delta_d * FREQ_ECH_QEI;
@@ -80,8 +85,11 @@ void QEIUpdateData() {
 void SendPositionData() {
     unsigned char positionPayload[24];
     getBytesFromInt32(positionPayload, 0, timestamp);
-    getBytesFromFloat(positionPayload, 4, (float) (robotState.xPosFromOdometry));
-    getBytesFromFloat(positionPayload, 8, (float) (robotState.yPosFromOdometry));
+    //getBytesFromFloat(positionPayload, 4, (float) (robotState.xPosFromOdometry));
+    //getBytesFromFloat(positionPayload, 8, (float) (robotState.yPosFromOdometry));
+    getBytesFromFloat(positionPayload, 4,distanceEncodeurGauche);
+    getBytesFromFloat(positionPayload, 8,distanceEncodeurDroit);
+    
     getBytesFromFloat(positionPayload, 12, (float) (robotState.angleRadianFromOdometry));
     getBytesFromFloat(positionPayload, 16, (float) (robotState.vitesseLineaireFromOdometry));
     getBytesFromFloat(positionPayload, 20, (float) (robotState.vitesseAngulaireFromOdometry));
