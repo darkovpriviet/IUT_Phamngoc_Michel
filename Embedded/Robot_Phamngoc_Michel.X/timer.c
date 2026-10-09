@@ -14,7 +14,7 @@
  extern volatile ROBOT_STATE_BITS robotState;
  unsigned long timestamp=0;
  float FCY = 60000000;
- int counterQ=0;
+ int counterQ;
 
 
  
@@ -30,7 +30,7 @@ void InitTimer1(void) {
     //00 = 1:1 prescale value
     T1CONbits.TCS = 0; //clock source = internal clock
     //PR1 = 0x249F;
-    SetFreqTimer1(3000);
+    SetFreqTimer1(250);
     IFS0bits.T1IF = 0; // Clear Timer Interrupt Flag
     IEC0bits.T1IE = 1; // Enable Timer interrupt
     T1CONbits.TON = 1; // Enable Timer
@@ -41,21 +41,24 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     IFS0bits.T1IF = 0;     
     PWMUpdateSpeed();
     ADC1StartConversionSequence();
-   QEIUpdateData();  
-   
+    QEIUpdateData();
+    UpdateAsservissementGhost();
+    
+    
     //UpdateAsservissement();
- 
+   
+    
+    
+    
+    
+    
+    //Distance_to_waypoint();
   
     
-    
-    
-     Distance_to_waypoint();
-     SendPositionData();
-    if(counterQ++%15==0){
-  
+      
     //TransmitAsserv();
         
-    }
+  
   
 }
 //Interruption du timer 1
@@ -69,7 +72,7 @@ void InitTimer4(void) {
     //00 = 1:1 prescale value
     T4CONbits.TCS = 0; //clock source = internal clock
     //PR4 = 0xEA60;
-    SetFreqTimer4(2000);
+    SetFreqTimer4();
     IFS1bits.T4IF = 0; // Clear Timer Interrupt Flag
     IEC1bits.T4IE = 1; // Enable Timer interrupt
     T4CONbits.TON = 1; // Enable Timer
@@ -77,20 +80,20 @@ void InitTimer4(void) {
 }
 
 void __attribute__((interrupt, no_auto_psv)) _T4Interrupt(void) {
-    IFS1bits.T4IF = 0;  
-  
+    IFS1bits.T4IF = 0; 
+    
+ 
+
+   
+   
     //timestamp++;
     //OperatingSystemLoop();
-    EtatGhost();
-    UpdateAsservissementGhost();
-     
-       if (counterQ >= 25)
-{
-    counterQ = 0;
-    Send_Ghost();
-}
-
-
+    
+     RotationGhost();
+    
+     Send_Ghost();
+     SendPositionData();
+  
 }
 
 

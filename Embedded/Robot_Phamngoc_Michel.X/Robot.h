@@ -32,6 +32,7 @@ float CorrectionVitesseAngulaire;
 PidCorrector PidX;
 PidCorrector PidTheta;
 PidCorrector PDAng;
+PidCorrector PDLin;
 float saveSpeed_Lineaire;
 float saveSpeed_Angulaire;
 double angleOdoCumule;

@@ -81,19 +81,16 @@ TransmitAsserv();
 
 void UpdateAsservissementGhost() //kp=63 kd =16
 {
-      //UpdateAngleUnwrap();
-//robotState.PDAng.erreur = robotState.saveSpeed_Lineaire - robotState.vitesseLineaireFromOdometry;
-//robotState.PDAng.erreur= 4*M_PI - robotState.angleOdoCumule;
-
-//robotState.PDAng.erreur=Rotation.ThetaWay-robotState.angleRadianFromOdometry;
-
-robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
+ 
 
 
-//robotState.PidTheta.erreur = VitesseTheta - robotState.vitesseAngulaireFromOdometry;
+
+//robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
+    robotState.PDLin.erreur=longitunal.ThetaGhost;
+
 
 //robotState.PDAng.Kp=robotState.PDAng.Kp;
-//robotState.CorrectionVitesseLineaire =Correcteur(&robotState.PidX, robotState.PidX.erreur);
+robotState.CorrectionVitesseLineaire =Correcteur(&robotState.PDLin, robotState.PDLin.erreur);
 robotState.CorrectionVitesseAngulaire = Correcteur(&robotState.PDAng, robotState.PDAng.erreur);
 
 PWMSetSpeedCommandPolaire(robotState.CorrectionVitesseLineaire,robotState.CorrectionVitesseAngulaire);
