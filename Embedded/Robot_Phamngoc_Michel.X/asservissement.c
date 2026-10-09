@@ -79,13 +79,15 @@ TransmitAsserv();
 }
 
 
-void UpdateAsservissementGhost()
+void UpdateAsservissementGhost() //kp=63 kd =16
 {
-      UpdateAngleUnwrap();
+      //UpdateAngleUnwrap();
 //robotState.PDAng.erreur = robotState.saveSpeed_Lineaire - robotState.vitesseLineaireFromOdometry;
-robotState.PDAng.erreur= 4*M_PI - robotState.angleOdoCumule;
+//robotState.PDAng.erreur= 4*M_PI - robotState.angleOdoCumule;
 
 //robotState.PDAng.erreur=Rotation.ThetaWay-robotState.angleRadianFromOdometry;
+
+robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
 
 
 //robotState.PidTheta.erreur = VitesseTheta - robotState.vitesseAngulaireFromOdometry;

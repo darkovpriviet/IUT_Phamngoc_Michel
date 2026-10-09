@@ -169,9 +169,9 @@ namespace RobotInterface
         {
             //robot.receivedText += Encoding.UTF8.GetString(e.Data, 0, e.Data.Length);
 
-            for (int i = 0; i < e.Data.Length; i++)
+            foreach (byte item in  e.Data)
             {
-                robot.byteListReceived.Enqueue(e.Data[i]);
+                robot.byteListReceived.Enqueue(item);
 
 
             }

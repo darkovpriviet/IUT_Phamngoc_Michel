@@ -50,7 +50,7 @@ double Correcteur(volatile PidCorrector* PidCorr, double erreur);
 void PWMSetSpeedConsignePolaire(float vitesseLineaire, float vitesseAngulaire);
 void SetupPidAsservissement(volatile PidCorrector* PidCorr, double Kp, double Ki, double Kd, double proportionelleMax, double integralMax,double deriveeMax);
 void UpdateAngleUnwrap();
-#define DISTROUES 0.2189
+#define DISTROUES 0.23
 //0.218
 
 #ifdef	__cplusplus

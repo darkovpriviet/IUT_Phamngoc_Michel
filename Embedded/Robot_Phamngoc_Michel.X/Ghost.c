@@ -20,13 +20,14 @@ extern int etapeghost;
 Ghost longitunal;
 volatile double VitesseTheta = 2;
 double VitesseLineaire = 2;
+int goat=250;
 void RotationGhost() {
     
 Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rotation.ThetaGhost;//]-pi, pi] 90 
             
     Rotation.ThetaArret = VitesseTheta*VitesseTheta /(2*AccelerationTheta);
             
-    Rotation.incrementTheta =VitesseTheta/100 ;
+    Rotation.incrementTheta =VitesseTheta/goat ;
     
         if(VitesseTheta<0){
         Rotation.ThetaArret=-Rotation.ThetaArret;
@@ -35,10 +36,10 @@ Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rota
     if(((Rotation.ThetaArret >= 0 && Rotation.ThetaRestant>=0) || (Rotation.ThetaArret <= 0 && Rotation.ThetaRestant <=0)) && (Abs(Rotation.ThetaRestant) >= Abs(Rotation.ThetaArret)))
     {
         if (Rotation.ThetaRestant > 0) {
-            VitesseTheta = Min(VitesseTheta + AccelerationTheta/ FREQ_ECH_QEI,VitesseThetaMax);
+            VitesseTheta = Min(VitesseTheta + AccelerationTheta/ goat,VitesseThetaMax);
         }
         else if (Rotation.ThetaRestant < 0) {
-            VitesseTheta = Max(VitesseTheta - AccelerationTheta/ FREQ_ECH_QEI,-VitesseThetaMax);// 
+            VitesseTheta = Max(VitesseTheta - AccelerationTheta/ goat,-VitesseThetaMax);// 
         }        
     }
     
@@ -46,11 +47,11 @@ Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rota
         
         if (VitesseTheta >0) {
             
-           VitesseTheta = Min(VitesseTheta - AccelerationTheta/ FREQ_ECH_QEI,0);
+           VitesseTheta = Min(VitesseTheta - AccelerationTheta/ goat,0);
         }
         
         else if (VitesseTheta <0) {
-           VitesseTheta = Max(VitesseTheta + AccelerationTheta/ FREQ_ECH_QEI,0);
+           VitesseTheta = Max(VitesseTheta + AccelerationTheta/ goat,0);
         }
         if (Abs(Rotation.ThetaRestant) < Abs(incrementAng)){
             Rotation.incrementTheta = Rotation.ThetaRestant;
