@@ -18,7 +18,7 @@ Point B;
 extern int etapeghost;
 
 Ghost longitunal;
-volatile float VitesseTheta = 2;
+volatile double VitesseTheta = 2;
 float VitesseLineaire = 2;
 int goat=250;
 void RotationGhost() {
@@ -87,7 +87,7 @@ void Longueur() {
     
     longitunal.ThetaArret = VitesseLineaire*VitesseLineaire /(2*AccelerationTheta);
             
-    longitunal.incrementTheta =VitesseLineaire/100 ;
+    longitunal.incrementTheta =VitesseLineaire/250 ;
     
         if(VitesseLineaire<0){
         longitunal.ThetaArret=-longitunal.ThetaArret;
@@ -119,7 +119,9 @@ void Longueur() {
     }
    
     longitunal.ThetaGhost = longitunal.ThetaGhost + longitunal.incrementTheta;
-       longitunal.X_Ghost =   longitunal.X_Ghost_depart + longitunal.ThetaGhost * cos(Rotation.ThetaGhost);
+//       longitunal.X_Ghost =   longitunal.X_Ghost_depart + longitunal.ThetaGhost * cos(M_PI);
+//       longitunal.Y_Ghost = longitunal.Y_Ghost_depart + longitunal.ThetaGhost * sin(M_PI);
+        longitunal.X_Ghost =   longitunal.X_Ghost_depart + longitunal.ThetaGhost * cos(Rotation.ThetaGhost);
        longitunal.Y_Ghost = longitunal.Y_Ghost_depart + longitunal.ThetaGhost * sin(Rotation.ThetaGhost);
    
    
@@ -150,12 +152,14 @@ void EtatGhost(){
         case ATTENTE: 
              longitunal.ThetaGhost =0;
              break;
-        case ROTATION:
+        case TRANSLATION:
            RotationGhost();
+           UpdateAsservissementGhost();
             break; 
         
-        case TRANSLATION:
+        case  ROTATION:
             Longueur();
+            UpdateAsservissementGhost();
             break; 
         
       
@@ -176,7 +180,7 @@ void Waypoint(){
 void Send_Ghost(){
     
    unsigned char payload[24];
-   getBytesFromFloat(payload,0,Rotation.X_Ghost);
+   getBytesFromFloat(payload,0,robotState.PDLin.erreur);
    getBytesFromFloat(payload,4,Rotation.Y_Ghost);
    getBytesFromFloat(payload, 8,Rotation.ThetaGhost *180/M_PI);
    getBytesFromFloat(payload,12,Rotation.HypoWay);

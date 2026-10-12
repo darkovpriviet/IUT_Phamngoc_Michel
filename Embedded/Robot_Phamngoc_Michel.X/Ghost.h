@@ -46,9 +46,9 @@ typedef struct _Ghost
 } Ghost;
 extern volatile Ghost Rotation;
 extern Ghost longitunal;
-extern void Longueur();
-extern void RotationGhost();
-extern void EtatGhost();
+void Longueur();
+void RotationGhost();
+void EtatGhost();
 void Send_Ghost();
 void Send_GhostLong();
 double Projete( double xA, double yA,double bx, double by);

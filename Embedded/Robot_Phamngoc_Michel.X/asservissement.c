@@ -9,8 +9,8 @@
 #include "Utilities.h"
 #include "math.h"
 #include "Ghost.h"
+
  extern volatile ROBOT_STATE_BITS robotState;
- extern volatile double VitesseTheta;
  static double angleOdoPrecedent = 0.0;
 
 
@@ -84,14 +84,21 @@ void UpdateAsservissementGhost() //kp=63 kd =16
  
 
 
-
-//robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
-    robotState.PDLin.erreur=longitunal.ThetaGhost;
-
-
+//    if(etapeghost== ROTATION){
+//        robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
+//        robotState.CorrectionVitesseAngulaire = Correcteur(&robotState.PDAng, robotState.PDAng.erreur);
+//    }
+//    if(etapeghost== TRANSLATION){
+     robotState.PDLin.erreur=0.20 - sqrt(robotState.xPosFromOdometry*robotState.xPosFromOdometry+robotState.yPosFromOdometry*robotState.yPosFromOdometry) ;
+     robotState.CorrectionVitesseLineaire =Correcteur(&robotState.PDLin, robotState.PDLin.erreur);
+//    }
+     if(robotState.PDLin.erreur==0){
+         
+         TransmitAsserv();
+     }
 //robotState.PDAng.Kp=robotState.PDAng.Kp;
-robotState.CorrectionVitesseLineaire =Correcteur(&robotState.PDLin, robotState.PDLin.erreur);
-robotState.CorrectionVitesseAngulaire = Correcteur(&robotState.PDAng, robotState.PDAng.erreur);
+
+
 
 PWMSetSpeedCommandPolaire(robotState.CorrectionVitesseLineaire,robotState.CorrectionVitesseAngulaire);
     //kp 50/2

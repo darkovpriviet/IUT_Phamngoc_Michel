@@ -262,7 +262,7 @@ void UartProcessDecodedMessage(int function,
   
         case COMMAND_PD_ANG:
               save_1=getFloatFromBytes(payload,0);
-              SetupPidAsservissement(&robotState.PDAng,getFloatFromBytes(payload,0),0,getFloatFromBytes(payload,4),100,400,200);
+              SetupPidAsservissement(&robotState.PDLin,getFloatFromBytes(payload,0),0,getFloatFromBytes(payload,4),100,400,200);
               
             break;
         default:
