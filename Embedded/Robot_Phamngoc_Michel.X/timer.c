@@ -30,7 +30,7 @@ void InitTimer1(void) {
     //00 = 1:1 prescale value
     T1CONbits.TCS = 0; //clock source = internal clock
     //PR1 = 0x249F;
-    SetFreqTimer1(250);
+    SetFreqTimer1(500);
     IFS0bits.T1IF = 0; // Clear Timer Interrupt Flag
     IEC0bits.T1IE = 1; // Enable Timer interrupt
     T1CONbits.TON = 1; // Enable Timer
@@ -42,7 +42,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     PWMUpdateSpeed();
     ADC1StartConversionSequence();
     QEIUpdateData();
-    UpdateAsservissementGhost();
+    EtatGhost();
     
     
     //UpdateAsservissement();

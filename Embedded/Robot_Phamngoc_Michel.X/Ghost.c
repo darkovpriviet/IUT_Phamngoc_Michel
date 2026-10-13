@@ -135,7 +135,7 @@ void Longueur() {
        longitunal.ThetaGhost = longitunal.HypoWay;
        longitunal.X_Ghost_depart= longitunal.X_Ghost;
        longitunal.Y_Ghost_depart = longitunal.Y_Ghost;
-       etapeghost=ATTENTE;
+       //etapeghost=ATTENTE;
        
       
  
@@ -150,14 +150,14 @@ void EtatGhost(){
     switch(etapeghost){
         
         case ATTENTE: 
-             longitunal.ThetaGhost =0;
+             //longitunal.ThetaGhost =0;
              break;
-        case TRANSLATION:
+        case ROTATION :
            RotationGhost();
            UpdateAsservissementGhost();
             break; 
         
-        case  ROTATION:
+        case TRANSLATION :
             Longueur();
             UpdateAsservissementGhost();
             break; 
@@ -197,7 +197,7 @@ void Send_GhostLong(){
      unsigned char payload[20];
      getBytesFromFloat(payload,0,longitunal.X_Ghost);
      getBytesFromFloat(payload,4,longitunal.Y_Ghost);
-     getBytesFromFloat(payload,8, Rotation.DisPro);
+     getBytesFromFloat(payload,8, longitunal.ThetaGhost);
      getBytesFromFloat(payload,12,B.x);
      getBytesFromFloat(payload,16,B.y);
      

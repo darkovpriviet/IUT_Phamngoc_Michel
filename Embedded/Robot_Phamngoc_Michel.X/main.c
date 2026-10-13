@@ -57,24 +57,18 @@ int main(void) {
    // SetupPidAsservissement(&robotState.PidX,7,140,0,10,200,0);
     //SetupPidAsservissement(&robotState.PidTheta,7,140,0,10,200,0);
     
+    SetupPidAsservissement(&robotState.PDAng,50,0,12,10,200,0);
+    SetupPidAsservissement(&robotState.PDLin,50,0,5,10,200,0);
+    
    
 
     while (1) {
-        
-        
-        
-        
-
-    
-
-
         //*******************************************TP3
-
-
         //****************************************
         
                  //Pas de IsdataAvailable sinon explosion
-                       for (int i = 0; i < CB_RX1_GetDataSize(); i++) {
+
+        for (int i = 0; i < CB_RX1_GetDataSize(); i++) {
                          unsigned char c = CB_RX1_Get();
                          UartDecodeMessage(c); //Décodage foireux
                         // SendMessage(&c,1);

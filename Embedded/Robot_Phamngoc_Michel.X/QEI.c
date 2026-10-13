@@ -85,10 +85,10 @@ void QEIUpdateData() {
 void SendPositionData() {
     unsigned char positionPayload[24];
     getBytesFromInt32(positionPayload, 0, timestamp);
-    //getBytesFromFloat(positionPayload, 4, (float) (robotState.xPosFromOdometry));
-    //getBytesFromFloat(positionPayload, 8, (float) (robotState.yPosFromOdometry));
-    getBytesFromFloat(positionPayload, 4,distanceEncodeurGauche);
-    getBytesFromFloat(positionPayload, 8,distanceEncodeurDroit);
+    getBytesFromFloat(positionPayload, 4, (float) (robotState.xPosFromOdometry));
+    getBytesFromFloat(positionPayload, 8, (float) (robotState.yPosFromOdometry));
+    //getBytesFromFloat(positionPayload, 4,distanceEncodeurGauche);
+    //getBytesFromFloat(positionPayload, 8,distanceEncodeurDroit);
     
     getBytesFromFloat(positionPayload, 12, (float) (robotState.angleRadianFromOdometry));
     getBytesFromFloat(positionPayload, 16, (float) (robotState.vitesseLineaireFromOdometry));

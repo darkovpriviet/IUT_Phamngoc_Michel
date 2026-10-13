@@ -64,7 +64,7 @@ namespace RobotInterface
             timerAffichage.Tick += TimerAffichage_Tick;
             timerAffichage.Start();
             InitializeComponent();
-            serialPort1 = new ExtendedSerialPort("COM3", 115200, Parity.None, 8, StopBits.One);
+            serialPort1 = new ExtendedSerialPort("COM4", 115200, Parity.None, 8, StopBits.One);
             serialPort1.DataReceived += SerialPort1_DataReceived;
             serialPort1.Open();
            //var _globalKeyboardHook = new GlobalKeyboardHook();
@@ -402,7 +402,7 @@ namespace RobotInterface
             PointWay(XInput1, YInput1);
 
             List<byte> Input = new List<byte>();
-            Input.AddRange(BitConverter.GetBytes(XInput1));
+            Input.AddRange(BitConverter.GetBytes(XInput1)); //heho c des points qui faut mettre pas des virgules .
             Input.AddRange(BitConverter.GetBytes(YInput1));
             Input.AddRange(BitConverter.GetBytes(Ecartinput1));
        
