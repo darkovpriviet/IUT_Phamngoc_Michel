@@ -84,20 +84,23 @@ void UpdateAsservissementGhost() //kp=63 kd =16
 {
  
 
+//if(etapeghost==ROTATION){
+//  
+//        robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
+//        robotState.PDLin.erreur=0;
+//}
+//    
+//    if(etapeghost==TRANSLATION){
+          robotState.PDLin.erreur=longitunal.ThetaGhost - sqrt(robotState.xPosFromOdometry*robotState.xPosFromOdometry+robotState.yPosFromOdometry*robotState.yPosFromOdometry);
+    robotState.PDAng.erreur=0;
+//    }
+   
 
-    if(etapeghost == ROTATION){
-        robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
-        robotState.PDLin.erreur=0;
-    }
-    if(etapeghost == TRANSLATION){
-     robotState.PDLin.erreur=longitunal.ThetaGhost - sqrt(robotState.xPosFromOdometry*robotState.xPosFromOdometry+robotState.yPosFromOdometry*robotState.yPosFromOdometry);
-     robotState.PDAng.erreur=0;
-    }
    
 //robotState.PDAng.Kp=robotState.PDAng.Kp;
    robotState.CorrectionVitesseAngulaire = Correcteur(&robotState.PDAng, robotState.PDAng.erreur);
    robotState.CorrectionVitesseLineaire =Correcteur(&robotState.PDLin, robotState.PDLin.erreur);
-PWMSetSpeedCommandPolaire(robotState.CorrectionVitesseLineaire,robotState.CorrectionVitesseAngulaire);
+   PWMSetSpeedCommandPolaire(robotState.CorrectionVitesseLineaire,robotState.CorrectionVitesseAngulaire);
     //kp 50/2
 //TransmitAsserv();
 }

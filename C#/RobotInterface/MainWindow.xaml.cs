@@ -21,6 +21,7 @@ using System.Security.Cryptography.Xml;
 using System.Windows.Ink;
 using SciChart.Charting.Common.Databinding;
 using System;
+using System.Collections.Generic;
 
 //kp==7 et Kp==140
 
@@ -49,8 +50,15 @@ namespace RobotInterface
         Robot robot = new Robot();
         private RotateTransform RotationGhost = new RotateTransform();
         private TranslateTransform TranslationGhost = new TranslateTransform();
-
+        
         private double lastAngle = 0;
+        private double cibleX = 0;
+        private double cibleY = 0;
+        private double cibleAngle = 0;
+
+        private TimeSpan? dernierRendu = null;
+        private bool animationActive = false;
+        private Queue<Point> fifoConsignes = new Queue<Point>();
 
 
 
@@ -64,12 +72,14 @@ namespace RobotInterface
             timerAffichage.Tick += TimerAffichage_Tick;
             timerAffichage.Start();
             InitializeComponent();
-            serialPort1 = new ExtendedSerialPort("COM4", 115200, Parity.None, 8, StopBits.One);
+            serialPort1 = new ExtendedSerialPort("COM3", 115200, Parity.None, 8, StopBits.One);
             serialPort1.DataReceived += SerialPort1_DataReceived;
             serialPort1.Open();
            //var _globalKeyboardHook = new GlobalKeyboardHook();
            // _globalKeyboardHook.KeyPressed += _globalKeyboardHook_KeyPressed;
             this.Loaded += MainWindow_Loaded;
+       
+           
     
 
 
@@ -82,7 +92,7 @@ namespace RobotInterface
 
         }
 
-
+   
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -115,16 +125,19 @@ namespace RobotInterface
             Canvas.SetTop(PositionGhost, myGrid.ActualHeight / 2);
 
             TransformGroup group = new TransformGroup();
-
             group.Children.Add(RotationGhost);
             group.Children.Add(TranslationGhost);
 
             PositionGhost.RenderTransform = group;
+       
+         
 
+            // Une seule inscription à l'événement de rendu.
+           
         }
 
 
-
+      
 
 
         private void SizeGrid(object sender, EventArgs e)
@@ -200,8 +213,9 @@ namespace RobotInterface
 
         private void SendWaypoint(float x, float Y)
         {
-          
 
+
+           
             byte[] payload = new byte[12];
             byte[] array = BitConverter.GetBytes(x);
             Array.Copy(array, 0, payload, 0, 4);
@@ -399,10 +413,10 @@ namespace RobotInterface
 
 
 
-            PointWay(XInput1, YInput1);
+            
 
             List<byte> Input = new List<byte>();
-            Input.AddRange(BitConverter.GetBytes(XInput1)); //heho c des points qui faut mettre pas des virgules .
+            Input.AddRange(BitConverter.GetBytes(XInput1)); //heho c des points qui faut mettre pas des virgules . maintenant c l'inverse sale batard
             Input.AddRange(BitConverter.GetBytes(YInput1));
             Input.AddRange(BitConverter.GetBytes(Ecartinput1));
        
@@ -418,7 +432,6 @@ namespace RobotInterface
             byte[] ThetaTab1 = Input1.ToArray();
 
             UartEncodeAndSendMessage(0x81, ThetaTab.Length, ThetaTab);
-
             UartEncodeAndSendMessage(0x83, ThetaTab1.Length, ThetaTab1);
 
         }
@@ -650,78 +663,55 @@ namespace RobotInterface
 
         private void RotateRobot(double theta)
         {
-            double nouvelleAngle = -theta;
-
-            DoubleAnimation animation = new DoubleAnimation
-            {
-                To = nouvelleAngle,
-                Duration = TimeSpan.FromMilliseconds(100),
-              
-            };
-
-            RotationGhost.BeginAnimation(
-                RotateTransform.AngleProperty,
-                animation);
-
-            lastAngle = nouvelleAngle;
+            RotationGhost.Angle = -theta;
         }
 
         private void Avance(double x, double y)
         {
-            const double pixelsParMetre = 50;
+            const double pixelsParMetre = 50.0;
 
-            double nouvelleX = x * pixelsParMetre;
-            double nouvelleY = -y * pixelsParMetre;
+            TranslationGhost.X = x * pixelsParMetre;
+            TranslationGhost.Y = -y * pixelsParMetre;
+    }
 
-            DoubleAnimation animationX = new DoubleAnimation
-            {
-                To = nouvelleX,
-                Duration = TimeSpan.FromMilliseconds(25)
-            };
-
-            DoubleAnimation animationY = new DoubleAnimation
-            {
-                To = nouvelleY,
-                Duration = TimeSpan.FromMilliseconds(25)
-            };
-
-            TranslationGhost.BeginAnimation(
-                TranslateTransform.XProperty,
-                animationX);
-
-            TranslationGhost.BeginAnimation(
-                TranslateTransform.YProperty,
-                animationY);
-        }
-
+        private System.Windows.Shapes.Polyline trajectoire =
+    new System.Windows.Shapes.Polyline
+    {
+        Stroke = Brushes.OrangeRed,
+        StrokeDashArray = new DoubleCollection { 1, 2 },
+        StrokeThickness = 3
+    };
         private void Ellipse(double x, double y)
         {
             double pixelsParMetre = 50;
 
-            // Si un point existe déjà, on le supprime
-            if (waypointPoint != null)
-            {
-                myGrid.Children.Remove(waypointPoint);
-            }
-
-            // Création du nouveau point
-            waypointPoint = new Ellipse
-            {
-                Width = 10,
-                Height = 10,
-                Fill = Brushes.Red
-            };
-
             double pixelX = myGrid.ActualWidth / 2 + x * pixelsParMetre;
             double pixelY = myGrid.ActualHeight / 2 - y * pixelsParMetre;
 
+            // Ajouter la trajectoire une seule fois
+            if (!myGrid.Children.Contains(trajectoire))
+                myGrid.Children.Add(trajectoire);
+
+            // Ajouter la position à la trajectoire
+            trajectoire.Points.Add(new Point(pixelX, pixelY));
+
+            // Créer le point rouge une seule fois
+            if (waypointPoint == null)
+            {
+                waypointPoint = new Ellipse
+                {
+                    Width = 10,
+                    Height = 10,
+                    Fill = Brushes.Red
+                };
+
+                myGrid.Children.Add(waypointPoint);
+            }
+
+            // Déplacer le point rouge
             Canvas.SetLeft(waypointPoint, pixelX - waypointPoint.Width / 2);
             Canvas.SetTop(waypointPoint, pixelY - waypointPoint.Height / 2);
-
-            myGrid.Children.Add(waypointPoint);
         }
-
-
 
 
 

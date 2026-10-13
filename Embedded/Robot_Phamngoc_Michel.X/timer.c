@@ -44,14 +44,10 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     QEIUpdateData();
     EtatGhost();
     
+ 
     
     //UpdateAsservissement();
    
-    
-    
-    
-    
-    
     //Distance_to_waypoint();
   
     
@@ -72,7 +68,7 @@ void InitTimer4(void) {
     //00 = 1:1 prescale value
     T4CONbits.TCS = 0; //clock source = internal clock
     //PR4 = 0xEA60;
-    SetFreqTimer4(100);
+    SetFreqTimer4(10);
     IFS1bits.T4IF = 0; // Clear Timer Interrupt Flag
     IEC1bits.T4IE = 1; // Enable Timer interrupt
     T4CONbits.TON = 1; // Enable Timer
@@ -81,15 +77,10 @@ void InitTimer4(void) {
 
 void __attribute__((interrupt, no_auto_psv)) _T4Interrupt(void) {
     IFS1bits.T4IF = 0; 
-    
- 
-
-   
-   
+  
     //timestamp++;
     //OperatingSystemLoop();
-    
-    
+ 
      Send_Ghost();
      SendPositionData();
   

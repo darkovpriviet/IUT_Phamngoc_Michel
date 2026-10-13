@@ -8,7 +8,6 @@
 #include "QEI.h"
 #include "Utilities.h"
 #include "math.h"
-
 #include "Ghost.h"
 
 volatile Ghost Rotation;
@@ -16,64 +15,61 @@ Point P;
 Point A;
 Point B;
 extern int etapeghost;
+volatile float VitesseTheta = 2;
 
+float VitesseLineaire = 0.03;
+float AccelerationTheta= 0.5;
+float AccelerationLineaire= 0.02;
+int VitesseThetaMax= 15;
+int VitesseLinMax= 0.05;
+    
 Ghost longitunal;
-volatile double VitesseTheta = 2;
-float VitesseLineaire = 2;
-int goat=250;
+
 void RotationGhost() {
+   
     
 Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rotation.ThetaGhost;//]-pi, pi] 90 
             
     Rotation.ThetaArret = VitesseTheta*VitesseTheta /(2*AccelerationTheta);
             
-    Rotation.incrementTheta =VitesseTheta/goat ;
+    Rotation.incrementTheta =VitesseTheta/FREQ_ECH_QEI ;
     
         if(VitesseTheta<0){
         Rotation.ThetaArret=-Rotation.ThetaArret;
     }
     
-    if(((Rotation.ThetaArret >= 0 && Rotation.ThetaRestant>=0) || (Rotation.ThetaArret <= 0 && Rotation.ThetaRestant <=0)) && (Abs(Rotation.ThetaRestant) >= Abs(Rotation.ThetaArret)))
+    if(((Rotation.ThetaArret >= 0 && Rotation.ThetaRestant>=0) || (Rotation.ThetaArret <= 0 && Rotation.ThetaRestant <=0)) && (fabs(Rotation.ThetaRestant) >= fabs(Rotation.ThetaArret)))
     {
         if (Rotation.ThetaRestant > 0) {
-            VitesseTheta = Min(VitesseTheta + AccelerationTheta/ goat,VitesseThetaMax);
+            VitesseTheta = Min(VitesseTheta + AccelerationTheta/ FREQ_ECH_QEI,VitesseThetaMax);
         }
         else if (Rotation.ThetaRestant < 0) {
-            VitesseTheta = Max(VitesseTheta - AccelerationTheta/ goat,-VitesseThetaMax);// 
+            VitesseTheta = Max(VitesseTheta - AccelerationTheta/ FREQ_ECH_QEI,-VitesseThetaMax);// 
         }        
     }
-    
     else {
         
         if (VitesseTheta >0) {
             
-           VitesseTheta = Min(VitesseTheta - AccelerationTheta/ goat,0);
+           VitesseTheta = Max(VitesseTheta - AccelerationTheta/ FREQ_ECH_QEI,0);
         }
         
         else if (VitesseTheta <0) {
-           VitesseTheta = Max(VitesseTheta + AccelerationTheta/ goat,0);
+           VitesseTheta = Min(VitesseTheta + AccelerationTheta/ FREQ_ECH_QEI,0);
         }
-        if (Abs(Rotation.ThetaRestant) < Abs(incrementAng)){
+        if (fabs(Rotation.ThetaRestant) < Abs(incrementAng)){
             Rotation.incrementTheta = Rotation.ThetaRestant;
         }
     }
  
    Rotation.ThetaGhost = Rotation.ThetaGhost + Rotation.incrementTheta;
    
-//   UartEncodeAndSendMessage(0x81,72,payload);
- 
-   if(VitesseTheta==0 && Abs(Rotation.ThetaRestant) <0.01){
+   if(VitesseTheta==0 && fabs(Rotation.ThetaRestant) <0.01){
        Rotation.ThetaGhost = Rotation.ThetaWay;
        Rotation.X_Ghost=Rotation.X;
        Rotation.Y_Ghost=Rotation.Y;
        etapeghost=TRANSLATION;
-      
-      
-       
-
-//       getBytesFromFloat(payload,48,Y);
- 
-       
+        
    }
 
 }
@@ -96,10 +92,10 @@ void Longueur() {
     if(((longitunal.ThetaArret >= 0 && longitunal.longRestant>=0) || (longitunal.ThetaArret <= 0 && longitunal.longRestant <=0)) && (Abs(longitunal.longRestant) >= Abs(longitunal.ThetaArret)))
     {
         if (longitunal.longRestant > 0) {
-            VitesseLineaire = Min(VitesseLineaire + AccelerationLineaire/ FREQ_ECH_QEI,VitesseThetaMax);
+            VitesseLineaire = Min(VitesseLineaire + AccelerationLineaire/ FREQ_ECH_QEI,VitesseLinMax);
         }
         else if (longitunal.longRestant < 0) {
-            VitesseLineaire = Max(VitesseLineaire - AccelerationLineaire/ FREQ_ECH_QEI,-VitesseThetaMax);// 
+            VitesseLineaire = Max(VitesseLineaire - AccelerationLineaire/ FREQ_ECH_QEI,-VitesseLinMax);// 
         }        
     }
     
@@ -107,11 +103,11 @@ void Longueur() {
         
         if (VitesseLineaire >0) {
             
-           VitesseLineaire = Min(VitesseLineaire - AccelerationLineaire/ FREQ_ECH_QEI,0);
+           VitesseLineaire = Max(VitesseLineaire - AccelerationLineaire/ FREQ_ECH_QEI,0);
         }
         
         else if (VitesseLineaire <0) {
-           VitesseLineaire = Max(VitesseLineaire + AccelerationLineaire/ FREQ_ECH_QEI,0);
+           VitesseLineaire = Min(VitesseLineaire + AccelerationLineaire/ FREQ_ECH_QEI,0);
         }
         if (Abs(longitunal.longRestant) < Abs(incrementLine)){
             longitunal.incrementTheta = longitunal.longRestant;
@@ -135,7 +131,7 @@ void Longueur() {
        longitunal.ThetaGhost = longitunal.HypoWay;
        longitunal.X_Ghost_depart= longitunal.X_Ghost;
        longitunal.Y_Ghost_depart = longitunal.Y_Ghost;
-       //etapeghost=ATTENTE;
+       etapeghost=ATTENTE;
        
       
  
@@ -150,9 +146,9 @@ void EtatGhost(){
     switch(etapeghost){
         
         case ATTENTE: 
-             //longitunal.ThetaGhost =0;
+             longitunal.ThetaGhost =0;
              break;
-        case ROTATION :
+        case  ROTATION :
            RotationGhost();
            UpdateAsservissementGhost();
             break; 

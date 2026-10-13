@@ -57,8 +57,8 @@ int main(void) {
    // SetupPidAsservissement(&robotState.PidX,7,140,0,10,200,0);
     //SetupPidAsservissement(&robotState.PidTheta,7,140,0,10,200,0);
     
-    SetupPidAsservissement(&robotState.PDAng,50,0,12,10,200,0);
-    SetupPidAsservissement(&robotState.PDLin,50,0,5,10,200,0);
+    //SetupPidAsservissement(&robotState.PDAng,50,0,12,10,200,0);
+    //SetupPidAsservissement(&robotState.PDLin,50,0,2,10,200,0);
     
    
 

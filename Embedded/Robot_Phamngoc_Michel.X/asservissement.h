@@ -9,9 +9,8 @@
 #define	ASSERVISSEMENT_H
 #define M_TO_PERCENT 32
 
-#define VitesseThetaMax 10
-#define AccelerationTheta 0.1
-#define AccelerationLineaire 0.2
+
+
 #define incrementAng 0.2
 #define incrementLine 0.2
 #define ATTENTE 0 

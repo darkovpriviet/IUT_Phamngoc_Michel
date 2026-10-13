@@ -8,6 +8,8 @@
 #ifndef GHOST_H
 #define	GHOST_H
 
+
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -15,30 +17,30 @@ extern "C" {
 
 typedef struct _Ghost
 {
- double ThetaGhost;
- double X;
- double Y;
- double ThetaWay;
- double ThetaRestant;
- double ThetaArret;
- double incrementTheta;
- double Distance;
- double DisPro;
- double HypoWay;
- double X_Ghost;
- double Y_Ghost;
- double X_Droite;
- double Y_Droite;
- double ProjeteY; 
- double Hypotenus;
+ float ThetaGhost;
+ float X;
+ float Y;
+ float ThetaWay;
+ float ThetaRestant;
+ float ThetaArret;
+ float incrementTheta;
+ float Distance;
+ float DisPro;
+ float HypoWay;
+ float X_Ghost;
+ float Y_Ghost;
+ float X_Droite;
+ float Y_Droite;
+ float ProjeteY; 
+ float Hypotenus;
 
- double ecartangle;
- double DisPar;
- double longRestant;
- double X_Ghost_depart;
- double Y_Ghost_depart;
- double ecart;
- double Waysave;
+ float ecartangle;
+ float DisPar;
+ float longRestant;
+ float X_Ghost_depart;
+ float Y_Ghost_depart;
+ float ecart;
+ float Waysave;
 
  
  
