@@ -55,6 +55,9 @@ void Send_Ghost();
 void Send_GhostLong();
 double Projete( double xA, double yA,double bx, double by);
 void Distance_to_waypoint();
+void carre();
+
+
 
 #ifdef	__cplusplus
 }

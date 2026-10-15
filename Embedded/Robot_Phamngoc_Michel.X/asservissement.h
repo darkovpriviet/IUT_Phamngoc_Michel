@@ -14,6 +14,20 @@
 #define incrementAng 0.2
 #define incrementLine 0.2
 #define ATTENTE 0 
+#define ATTENTE2 1 
+#define DROIT 2
+#define POINTA 3
+#define POINTB 4
+#define POINTC 5
+#define POINTD 6
+#define POINTE 7 
+
+
+
+
+
+
+
 #define ROTATION 1
 #define TRANSLATION 2
 
@@ -49,6 +63,7 @@ double Correcteur(volatile PidCorrector* PidCorr, double erreur);
 void PWMSetSpeedConsignePolaire(float vitesseLineaire, float vitesseAngulaire);
 void SetupPidAsservissement(volatile PidCorrector* PidCorr, double Kp, double Ki, double Kd, double proportionelleMax, double integralMax,double deriveeMax);
 void UpdateAngleUnwrap();
+
 #define DISTROUES 0.218287
 // DISTROUES 0.218
 

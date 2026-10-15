@@ -18,6 +18,7 @@ int payloadLength, unsigned char* payload);
 void SetRobotState(unsigned char state);
 void SetRobotAutoControlState(unsigned char state);
 extern int autoControlActivated;
+void Consigne ( float x, float y, float ecart);
 #define Waiting 0
 #define FunctionMSB 1
 

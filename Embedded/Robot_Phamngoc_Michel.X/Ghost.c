@@ -9,6 +9,7 @@
 #include "Utilities.h"
 #include "math.h"
 #include "Ghost.h"
+#include "timer.h"
 
 volatile Ghost Rotation;
 Point P;
@@ -22,10 +23,10 @@ volatile float VitesseLineaire = 0;
 float AccelerationTheta= 2;
 float VitesseThetaMax= 5;
 
-
-float AccelerationLineaire= 0.7;
-float VitesseLinMax= 1.5;
-    
+extern  unsigned long timestamp;
+float AccelerationLineaire= 0.77;
+float VitesseLinMax= 1;
+volatile int etapecarre=0;
 Ghost longitunal;
 
 void RotationGhost() {
@@ -71,7 +72,7 @@ Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rota
        Rotation.ThetaGhost = Rotation.ThetaWay;
        Rotation.X_Ghost=Rotation.X;
        Rotation.Y_Ghost=Rotation.Y;
-       etapeghost=ROTATION;
+       etapeghost=TRANSLATION;
         
    }
 
@@ -134,7 +135,7 @@ void Longueur() {
        longitunal.ThetaGhost = longitunal.HypoWay;
        longitunal.X_Ghost_depart= longitunal.X_Ghost;
        longitunal.Y_Ghost_depart = longitunal.Y_Ghost;
-       etapeghost=ROTATION;
+       etapeghost=ATTENTE;
        
       
  
@@ -151,12 +152,12 @@ void EtatGhost(){
         case ATTENTE: 
              longitunal.ThetaGhost =0;
              break;
-        case TRANSLATION  :
+        case ROTATION  :
            RotationGhost();
            UpdateAsservissementGhost();
             break; 
         
-        case ROTATION :
+        case TRANSLATION :
             Longueur();
             UpdateAsservissementGhost();
             break; 
@@ -202,6 +203,64 @@ void Send_GhostLong(){
      
      
      UartEncodeAndSendMessage(0x82,20,payload);
+}
+
+void carre(){
+    
+    int x;
+    switch(etapecarre){
+        
+        case ATTENTE: 
+             timestamp = 0;
+             longitunal.ThetaGhost =0;
+             etapecarre=ATTENTE2;
+             break;
+             
+        case ATTENTE2:
+            if(timestamp>=2000){
+                etapecarre=2+x;
+                timestamp=0;
+            }
+                
+             break;
+             
+             
+        case  DROIT:
+            Consigne(1.155,0,0);
+            x++;
+            etapecarre=ATTENTE2;
+            break; 
+        
+        case  POINTA:
+           Consigne(0,-0.489,0);
+            x++;
+            etapecarre=ATTENTE2;
+            break; 
+        case POINTB:
+            Consigne(0.489,0,0);
+             x++;
+            etapecarre=ATTENTE2;
+            break;
+        case POINTC:
+            Consigne(0.489,0,0);
+             x++;
+            etapecarre=ATTENTE2;
+            break;
+        case POINTD:
+            Consigne(-0.489,0,0);
+             x++;
+            etapecarre=ATTENTE2;
+            break;
+        case POINTE:
+            Consigne(0.346,-0.346,0);
+             x=0;
+            etapecarre=75;
+     
+            break;
+  
+    }
+
+
 }
 
 

@@ -190,60 +190,17 @@ void UartProcessDecodedMessage(int function,
            
         case ROTATION_GHOST: 
            
-            etapeghost=ROTATION;
+          
+            
+            
             Rotation.X = getFloatFromBytes(payload,0);
             Rotation.Y = getFloatFromBytes(payload,4);
             Rotation.ecart =getFloatFromBytes(payload,8);
             
-         
+            Consigne( Rotation.X,Rotation.Y,  Rotation.ecart);
             
             
-            longitunal.HypoWay = sqrt(Rotation.X*Rotation.X +Rotation.Y*Rotation.Y);
           
-         
-            
-              if(Rotation.X==0){
-                  
-                if(Rotation.Y<0)
-                {
-                    Rotation.ThetaWay=-M_PI/2 - Rotation.ecart ;
-                    Rotation.Waysave = -M_PI/2;
-            
-                }
-                    else{
-                       Rotation.ThetaWay=M_PI/2 - Rotation.ecart  ;
-                        Rotation.Waysave = M_PI/2;
-                    }
-                 
-                
-            }
-                    
-         
-  
-            if(Rotation.X>0){
-                 Rotation.ThetaWay=atan(Rotation.Y/Rotation.X) - Rotation.ecart;
-                Rotation.Waysave = atan(Rotation.Y/Rotation.X);
-            }
-               
-            
-            else if(Rotation.X<0){
-                if(Rotation.Y>0)
-                {
-                     Rotation.ThetaWay=M_PI+atan(Rotation.Y/Rotation.X)- Rotation.ecart;
-                   Rotation.Waysave=M_PI+atan(Rotation.Y/Rotation.X);
-                }
-                   
-                else{
-                    Rotation.ThetaWay=-M_PI+atan(Rotation.Y/Rotation.X - Rotation.ecart);
-                     Rotation.Waysave =-M_PI+atan(Rotation.Y/Rotation.X);
-                }
-     
-            }
-           
-           Waypoint();
-   double R=40;
-            B.x = R * cos(Rotation.ecartangle);
-            B.y = R * sin(Rotation.ecartangle);
         /*    if ( Rotation.ecartangle == M_PI /2 | Rotation.ecartangle == -M_PI /2 ){
                      B.x=40;
                      B.y= sqrt((Rotation.X*Rotation.X)+(Rotation.Y*Rotation.Y));
@@ -262,7 +219,7 @@ void UartProcessDecodedMessage(int function,
   break;
   
         case COMMAND_PD_ANG:
-              SetupPidAsservissement(&robotState.PDLin,getFloatFromBytes(payload,0),0,getFloatFromBytes(payload,4),100,400,200);
+              //SetupPidAsservissement(&robotState.PDLin,getFloatFromBytes(payload,0),0,getFloatFromBytes(payload,4),100,400,200);
             break;
         default:
             break;
@@ -281,6 +238,58 @@ void UartProcessDecodedMessage(int function,
 
 }
 
+
+void Consigne ( float x, float y, float ecart){
+            etapeghost=ROTATION;
+            longitunal.HypoWay = sqrt(x*x +y*y);
+          
+         
+            
+              if(x==0){
+                  
+                if(y<0)
+                {
+                    Rotation.ThetaWay=-M_PI/2 - ecart ;
+                    Rotation.Waysave = -M_PI/2;
+            
+                }
+                    else{
+                       Rotation.ThetaWay=M_PI/2 - ecart ;
+                        Rotation.Waysave = M_PI/2;
+                    }
+                 
+                
+            }
+                    
+         
+  
+            if(x>0){
+                 Rotation.ThetaWay=atan(y/x) - ecart;
+                Rotation.Waysave = atan(y/x);
+            }
+               
+            
+            else if(x<0){
+                if(y>0)
+                {
+                     Rotation.ThetaWay=M_PI+atan(y/x)- ecart;
+                   Rotation.Waysave=M_PI+atan(y/x);
+                }
+                   
+                else{
+                    Rotation.ThetaWay=-M_PI+atan(y/x) - ecart;
+                     Rotation.Waysave =-M_PI+atan(y/x);
+                }
+     
+            }
+           
+           Waypoint();
+//   double R=40;
+//            B.x = R * cos(Rotation.ecartangle);
+//            B.y = R * sin(Rotation.ecartangle);
+//    
+//}
+}
 
 void SetRobotState(unsigned char state){
       switch(state){
