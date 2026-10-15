@@ -189,6 +189,7 @@ void UartProcessDecodedMessage(int function,
             break;
            
         case ROTATION_GHOST: 
+           
             etapeghost=ROTATION;
             Rotation.X = getFloatFromBytes(payload,0);
             Rotation.Y = getFloatFromBytes(payload,4);

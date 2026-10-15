@@ -15,18 +15,21 @@ Point P;
 Point A;
 Point B;
 extern int etapeghost;
-volatile float VitesseTheta = 2;
 
-float VitesseLineaire = 0.03;
-float AccelerationTheta= 0.5;
-float AccelerationLineaire= 0.02;
-int VitesseThetaMax= 15;
-int VitesseLinMax= 0.05;
+volatile float VitesseTheta=0;
+volatile float VitesseLineaire = 0;
+
+float AccelerationTheta= 2;
+float VitesseThetaMax= 5;
+
+
+float AccelerationLineaire= 0.7;
+float VitesseLinMax= 1.5;
     
 Ghost longitunal;
 
 void RotationGhost() {
-   
+ 
     
 Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rotation.ThetaGhost;//]-pi, pi] 90 
             
@@ -51,13 +54,13 @@ Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rota
         
         if (VitesseTheta >0) {
             
-           VitesseTheta = Max(VitesseTheta - AccelerationTheta/ FREQ_ECH_QEI,0);
+           VitesseTheta = Max(VitesseTheta - AccelerationTheta/ FREQ_ECH_QEI,0.0);
         }
         
         else if (VitesseTheta <0) {
-           VitesseTheta = Min(VitesseTheta + AccelerationTheta/ FREQ_ECH_QEI,0);
+           VitesseTheta = Min(VitesseTheta + AccelerationTheta/ FREQ_ECH_QEI,0.0);
         }
-        if (fabs(Rotation.ThetaRestant) < Abs(incrementAng)){
+        if (fabs(Rotation.ThetaRestant) < Abs(Rotation.incrementTheta)){
             Rotation.incrementTheta = Rotation.ThetaRestant;
         }
     }
@@ -68,7 +71,7 @@ Rotation.ThetaRestant= ModuloByAngle(Rotation.ThetaGhost,Rotation.ThetaWay)-Rota
        Rotation.ThetaGhost = Rotation.ThetaWay;
        Rotation.X_Ghost=Rotation.X;
        Rotation.Y_Ghost=Rotation.Y;
-       etapeghost=TRANSLATION;
+       etapeghost=ROTATION;
         
    }
 
@@ -131,7 +134,7 @@ void Longueur() {
        longitunal.ThetaGhost = longitunal.HypoWay;
        longitunal.X_Ghost_depart= longitunal.X_Ghost;
        longitunal.Y_Ghost_depart = longitunal.Y_Ghost;
-       etapeghost=ATTENTE;
+       etapeghost=ROTATION;
        
       
  
@@ -148,12 +151,12 @@ void EtatGhost(){
         case ATTENTE: 
              longitunal.ThetaGhost =0;
              break;
-        case  ROTATION :
+        case TRANSLATION  :
            RotationGhost();
            UpdateAsservissementGhost();
             break; 
         
-        case TRANSLATION :
+        case ROTATION :
             Longueur();
             UpdateAsservissementGhost();
             break; 

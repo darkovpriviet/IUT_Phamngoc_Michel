@@ -57,7 +57,7 @@ int main(void) {
    // SetupPidAsservissement(&robotState.PidX,7,140,0,10,200,0);
     //SetupPidAsservissement(&robotState.PidTheta,7,140,0,10,200,0);
     
-    //SetupPidAsservissement(&robotState.PDAng,50,0,12,10,200,0);
+    //SetupPidAsservissement(&robotState.PDAng,50,0,10,10,200,0);
     //SetupPidAsservissement(&robotState.PDLin,50,0,2,10,200,0);
     
    
@@ -65,7 +65,7 @@ int main(void) {
     while (1) {
         //*******************************************TP3
         //****************************************
-        
+     
                  //Pas de IsdataAvailable sinon explosion
 
         for (int i = 0; i < CB_RX1_GetDataSize(); i++) {

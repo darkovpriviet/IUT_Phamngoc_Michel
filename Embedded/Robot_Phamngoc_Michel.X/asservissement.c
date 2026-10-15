@@ -15,6 +15,9 @@ extern int etapeghost;
  static double angleOdoPrecedent = 0.0;
 
 
+extern volatile float VitesseTheta;
+extern volatile float VitesseLineaire;
+
 
 
 void SetupPidAsservissement(volatile PidCorrector* PidCorr, double Kp, double Ki, double Kd, double proportionelleMax, double integralMax,double deriveeMax){
@@ -46,8 +49,8 @@ robotState.vitesseDroiteConsigne = vitesseLineaire + vitesseAngulaire*(0.218/2);
 robotState.vitesseGaucheConsigne = vitesseLineaire - vitesseAngulaire*(0.218/2);   
 robotState.vitesseDroitePercent = -M_TO_PERCENT * robotState.vitesseDroiteConsigne;
 robotState.vitesseGauchePercent = M_TO_PERCENT * robotState.vitesseGaucheConsigne;
-LimitToInterval(robotState.vitesseDroitePercent , -100, 100);
-LimitToInterval(robotState.vitesseGauchePercent , -100, 100);
+LimitToInterval(robotState.vitesseDroitePercent , -100.0, 100.0);
+LimitToInterval(robotState.vitesseGauchePercent , -100.0, 100.0);
 }
  //kp quand oscille mettre Kp/2 ki 30 pourcent quand il oscille  kd =0,5 pas a mettre pour l instant 
 double Correcteur(volatile PidCorrector* PidCorr, double erreur)
@@ -80,20 +83,20 @@ TransmitAsserv();
 }
 
 
-void UpdateAsservissementGhost() //kp=63 kd =16
+void UpdateAsservissementGhost() //kp=63 kd =16  LIN kd=50 kp=10?
 {
  
 
-//if(etapeghost==ROTATION){
-//  
-//        robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
-//        robotState.PDLin.erreur=0;
-//}
-//    
-//    if(etapeghost==TRANSLATION){
+if(etapeghost==TRANSLATION){
+  
+        robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
+        robotState.PDLin.erreur=0;
+}
+    
+    if(etapeghost==ROTATION){
           robotState.PDLin.erreur=longitunal.ThetaGhost - sqrt(robotState.xPosFromOdometry*robotState.xPosFromOdometry+robotState.yPosFromOdometry*robotState.yPosFromOdometry);
     robotState.PDAng.erreur=0;
-//    }
+    }
    
 
    
