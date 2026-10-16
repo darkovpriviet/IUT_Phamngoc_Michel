@@ -85,15 +85,21 @@ TransmitAsserv();
 
 void UpdateAsservissementGhost() //kp=50 kd =2  LIN kd=35 kp=1,7?
 {
+    
+    
+    robotState.PDAng.erreur=0;
+    robotState.PDLin.erreur=0;
     if(etapeghost== ROTATION){
          robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
          robotState.PDLin.erreur=0;
     }
 
     if(etapeghost==TRANSLATION){
-        robotState.PDLin.erreur=longitunal.ThetaGhost - sqrt(robotState.xPosFromOdometry*robotState.xPosFromOdometry+robotState.yPosFromOdometry*robotState.yPosFromOdometry);
+        //robotState.PDLin.erreur=longitunal.ThetaGhost - sqrt(robotState.xPosFromOdometry*robotState.xPosFromOdometry+robotState.yPosFromOdometry*robotState.yPosFromOdometry);
+        robotState.PDLin.erreur=(longitunal.X_Ghost - robotState.xPosFromOdometry)*cosf(Rotation.ThetaGhost)+(longitunal.Y_Ghost - robotState.yPosFromOdometry)*sinf(Rotation.ThetaGhost);
         robotState.PDAng.erreur=0;
     }
+    
        //robotState.PDAng.Kp=robotState.PDAng.Kp;
    robotState.CorrectionVitesseAngulaire = Correcteur(&robotState.PDAng, robotState.PDAng.erreur);
    robotState.CorrectionVitesseLineaire =Correcteur(&robotState.PDLin, robotState.PDLin.erreur);

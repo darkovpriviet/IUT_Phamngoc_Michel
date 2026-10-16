@@ -24,8 +24,8 @@ float AccelerationTheta= 2;
 float VitesseThetaMax= 5;
 
 extern  unsigned long timestamp;
-float AccelerationLineaire= 0.77;
-float VitesseLinMax= 1;
+float AccelerationLineaire= 0.2;
+float VitesseLinMax= 0.7;
 volatile int etapecarre=0;
 Ghost longitunal;
 
@@ -113,7 +113,7 @@ void Longueur() {
         else if (VitesseLineaire <0) {
            VitesseLineaire = Min(VitesseLineaire + AccelerationLineaire/ FREQ_ECH_QEI,0);
         }
-        if (Abs(longitunal.longRestant) < Abs(incrementLine)){
+        if (Abs(longitunal.longRestant) < Abs(longitunal.incrementTheta)){
             longitunal.incrementTheta = longitunal.longRestant;
         }
     }
@@ -138,7 +138,7 @@ void Longueur() {
        etapeghost=ATTENTE;
        
       
- 
+
   
   }
 

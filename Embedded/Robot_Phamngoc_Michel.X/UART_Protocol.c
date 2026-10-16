@@ -192,10 +192,14 @@ void UartProcessDecodedMessage(int function,
            
           
             
-            
+            longitunal.ThetaGhost = 0;
             Rotation.X = getFloatFromBytes(payload,0);
             Rotation.Y = getFloatFromBytes(payload,4);
             Rotation.ecart =getFloatFromBytes(payload,8);
+          
+            
+            
+            
             
             Consigne( Rotation.X,Rotation.Y,  Rotation.ecart);
             
@@ -241,9 +245,12 @@ void UartProcessDecodedMessage(int function,
 
 void Consigne ( float x, float y, float ecart){
             etapeghost=ROTATION;
+            //Rotation.ThetaGhost = robotState.angleRadianFromOdometry;
+            Rotation.ThetaGhost = Rotation.ThetaWay;
+            
+            x = x - longitunal.X_Ghost_depart;
+            y = y - longitunal.Y_Ghost_depart;
             longitunal.HypoWay = sqrt(x*x +y*y);
-          
-         
             
               if(x==0){
                   
@@ -253,10 +260,15 @@ void Consigne ( float x, float y, float ecart){
                     Rotation.Waysave = -M_PI/2;
             
                 }
-                    else{
+                else if(y>0){
                        Rotation.ThetaWay=M_PI/2 - ecart ;
                         Rotation.Waysave = M_PI/2;
-                    }
+                }
+                else if(y==0){
+            
+                     Rotation.ThetaWay=0;
+                }
+                        
                  
                 
             }
@@ -276,9 +288,13 @@ void Consigne ( float x, float y, float ecart){
                    Rotation.Waysave=M_PI+atan(y/x);
                 }
                    
-                else{
+                else if (y<0){
                     Rotation.ThetaWay=-M_PI+atan(y/x) - ecart;
                      Rotation.Waysave =-M_PI+atan(y/x);
+                }
+                else if (y==0){
+                      Rotation.ThetaWay=M_PI;
+                    
                 }
      
             }

@@ -43,7 +43,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     ADC1StartConversionSequence();
     QEIUpdateData();
     EtatGhost();
-    carre();
+    //carre();
     if(counterQ++%500){
         timestamp++;
         counterQ=0;
