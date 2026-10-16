@@ -17,6 +17,7 @@ Point A;
 Point B;
 extern int etapeghost;
 
+
 volatile float VitesseTheta=0;
 volatile float VitesseLineaire = 0;
 
@@ -25,8 +26,9 @@ float VitesseThetaMax= 5;
 
 extern  unsigned long timestamp;
 float AccelerationLineaire= 0.2;
-float VitesseLinMax= 0.7;
-volatile int etapecarre=0;
+float VitesseLinMax= 1;
+volatile int compteur_etape;
+ volatile int etapecarre=75;
 Ghost longitunal;
 
 void RotationGhost() {
@@ -87,7 +89,7 @@ void Longueur() {
     
     longitunal.ThetaArret = VitesseLineaire*VitesseLineaire /(2*AccelerationTheta);
             
-    longitunal.incrementTheta =VitesseLineaire/250 ;
+    longitunal.incrementTheta =VitesseLineaire/FREQ_ECH_QEI ;
     
         if(VitesseLineaire<0){
         longitunal.ThetaArret=-longitunal.ThetaArret;
@@ -122,7 +124,7 @@ void Longueur() {
 //       longitunal.X_Ghost =   longitunal.X_Ghost_depart + longitunal.ThetaGhost * cos(M_PI);
 //       longitunal.Y_Ghost = longitunal.Y_Ghost_depart + longitunal.ThetaGhost * sin(M_PI);
         longitunal.X_Ghost =   longitunal.X_Ghost_depart + longitunal.ThetaGhost * cos(Rotation.ThetaGhost);
-       longitunal.Y_Ghost = longitunal.Y_Ghost_depart + longitunal.ThetaGhost * sin(Rotation.ThetaGhost);
+        longitunal.Y_Ghost = longitunal.Y_Ghost_depart + longitunal.ThetaGhost * sin(Rotation.ThetaGhost);
    
    
 //   UartEncodeAndSendMessage(0x81,72,payload);
@@ -131,16 +133,18 @@ void Longueur() {
     
     
     
-   if(VitesseLineaire==0 && Abs(longitunal.longRestant) <0.01){
-       longitunal.ThetaGhost = longitunal.HypoWay;
-       longitunal.X_Ghost_depart= longitunal.X_Ghost;
-       longitunal.Y_Ghost_depart = longitunal.Y_Ghost;
-       etapeghost=ATTENTE;
-       
-      
+ if (Abs(longitunal.HypoWay - longitunal.ThetaGhost) < 0.01 && Abs(VitesseLineaire) < 0.01) {
+    VitesseLineaire = 0;
+    longitunal.ThetaGhost = 0;
 
-  
-  }
+    longitunal.X_Ghost_depart += longitunal.HypoWay * cos(Rotation.ThetaGhost);
+    longitunal.Y_Ghost_depart += longitunal.HypoWay * sin(Rotation.ThetaGhost);
+    longitunal.X_Ghost = longitunal.X_Ghost_depart;
+    longitunal.Y_Ghost = longitunal.Y_Ghost_depart;
+    
+
+    etapeghost = ATTENTE;
+}
 
 }
 
@@ -154,12 +158,12 @@ void EtatGhost(){
              break;
         case ROTATION  :
            RotationGhost();
-           UpdateAsservissementGhost();
+          
             break; 
         
         case TRANSLATION :
             Longueur();
-            UpdateAsservissementGhost();
+        
             break; 
         
       
@@ -207,7 +211,7 @@ void Send_GhostLong(){
 
 void carre(){
     
-    int x;
+    
     switch(etapecarre){
         
         case ATTENTE: 
@@ -217,8 +221,8 @@ void carre(){
              break;
              
         case ATTENTE2:
-            if(timestamp>=2000){
-                etapecarre=2+x;
+            if(timestamp>=500){
+                etapecarre=2+compteur_etape;
                 timestamp=0;
             }
                 
@@ -227,33 +231,33 @@ void carre(){
              
         case  DROIT:
             Consigne(1.155,0,0);
-            x++;
+            compteur_etape++;
             etapecarre=ATTENTE2;
             break; 
         
         case  POINTA:
-           Consigne(0,-0.489,0);
-            x++;
+           Consigne(1.155,0.489,0);
+            compteur_etape++;
             etapecarre=ATTENTE2;
             break; 
         case POINTB:
-            Consigne(0.489,0,0);
-             x++;
+            Consigne(1.155+0.489,0.489,0);
+             compteur_etape++;
             etapecarre=ATTENTE2;
             break;
         case POINTC:
-            Consigne(0.489,0,0);
-             x++;
+            Consigne(1.155+0.489,0,0);
+             compteur_etape++;
             etapecarre=ATTENTE2;
             break;
         case POINTD:
-            Consigne(-0.489,0,0);
-             x++;
+            Consigne(1.155,0,0);
+             compteur_etape++;
             etapecarre=ATTENTE2;
             break;
         case POINTE:
-            Consigne(0.346,-0.346,0);
-             x=0;
+            Consigne(1.155+0.489/2,0.489/2,0);
+            compteur_etape=0;
             etapecarre=75;
      
             break;

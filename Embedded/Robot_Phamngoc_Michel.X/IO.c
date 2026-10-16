@@ -35,6 +35,12 @@ void InitIO()
     _TRISJ11 = 0; // LED Rouge
     _TRISH10 = 0; // LED Verte
     
+    //**************Bouton *******************
+    
+    _TRISH0 = 1;
+    _TRISH1 = 1;
+    _TRISH2 = 1;
+    
     //Prend les 2 derniers caractères avec _TRIS 
     _TRISA9 = 0; // LED Bleu
     _TRISA10 = 0; // LED Rouge 

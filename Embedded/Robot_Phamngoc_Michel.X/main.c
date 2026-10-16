@@ -34,6 +34,7 @@ float payload = 45.55;
 char buffer[4];
 int counter = 0;
 unsigned char stateRobot = 0;
+ extern volatile int etapecarre;
 
 
 int main(void) {
@@ -65,7 +66,11 @@ int main(void) {
     while (1) {
         //*******************************************TP3
         //****************************************
-     
+  
+        if(SW1){
+            etapecarre=0;
+          
+        }
                  //Pas de IsdataAvailable sinon explosion
 
         for (int i = 0; i < CB_RX1_GetDataSize(); i++) {

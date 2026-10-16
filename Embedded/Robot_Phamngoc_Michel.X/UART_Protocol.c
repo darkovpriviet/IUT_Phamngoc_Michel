@@ -201,25 +201,9 @@ void UartProcessDecodedMessage(int function,
             
             
             
-            Consigne( Rotation.X,Rotation.Y,  Rotation.ecart);
-            
-            
-          
-        /*    if ( Rotation.ecartangle == M_PI /2 | Rotation.ecartangle == -M_PI /2 ){
-                     B.x=40;
-                     B.y= sqrt((Rotation.X*Rotation.X)+(Rotation.Y*Rotation.Y));
-            }
-            else if (Rotation.ecartangle == M_PI | Rotation.ecartangle == 0){
-                B.y=40;
-                B.x= sqrt((Rotation.X*Rotation.X)+(Rotation.Y*Rotation.Y));
-            }
-            else
-            {
-                B.y=40;
-                double save_angle =tan(Rotation.ecartangle);
-                B.x= B.y/tan(Rotation.ecartangle);
-                        
-            }*/          
+            Consigne(Rotation.X,Rotation.Y,  Rotation.ecart);
+           
+           
   break;
   
         case COMMAND_PD_ANG:
@@ -246,7 +230,7 @@ void UartProcessDecodedMessage(int function,
 void Consigne ( float x, float y, float ecart){
             etapeghost=ROTATION;
             //Rotation.ThetaGhost = robotState.angleRadianFromOdometry;
-            Rotation.ThetaGhost = Rotation.ThetaWay;
+     
             
             x = x - longitunal.X_Ghost_depart;
             y = y - longitunal.Y_Ghost_depart;
@@ -292,10 +276,7 @@ void Consigne ( float x, float y, float ecart){
                     Rotation.ThetaWay=-M_PI+atan(y/x) - ecart;
                      Rotation.Waysave =-M_PI+atan(y/x);
                 }
-                else if (y==0){
-                      Rotation.ThetaWay=M_PI;
-                    
-                }
+           
      
             }
            
