@@ -16,6 +16,7 @@ Point P;
 Point A;
 Point B;
 extern int etapeghost;
+volatile int attente;
 
 
 volatile float VitesseTheta=0;
@@ -141,6 +142,8 @@ void Longueur() {
     longitunal.Y_Ghost_depart += longitunal.HypoWay * sin(Rotation.ThetaGhost);
     longitunal.X_Ghost = longitunal.X_Ghost_depart;
     longitunal.Y_Ghost = longitunal.Y_Ghost_depart;
+    attente =1;
+   
     
 
     etapeghost = ATTENTE;
@@ -215,13 +218,16 @@ void carre(){
     switch(etapecarre){
         
         case ATTENTE: 
+             if(timestamp>=1000){
              timestamp = 0;
              longitunal.ThetaGhost =0;
-             etapecarre=ATTENTE2;
+             etapecarre=DROIT;
+             }
              break;
              
         case ATTENTE2:
-            if(timestamp>=500){
+            if(attente==1 && timestamp>=1000){
+                attente=0;
                 etapecarre=2+compteur_etape;
                 timestamp=0;
             }
@@ -230,9 +236,11 @@ void carre(){
              
              
         case  DROIT:
+             
             Consigne(1.155,0,0);
             compteur_etape++;
             etapecarre=ATTENTE2;
+           
             break; 
         
         case  POINTA:

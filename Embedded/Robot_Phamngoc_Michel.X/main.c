@@ -59,7 +59,7 @@ int main(void) {
     //SetupPidAsservissement(&robotState.PidTheta,7,140,0,10,200,0);
     
     SetupPidAsservissement(&robotState.PDAng,50,0,2,10,200,0);
-    SetupPidAsservissement(&robotState.PDLin,35,0,2,10,200,0);
+    SetupPidAsservissement(&robotState.PDLin,35,0,3,10,200,0);
     
    
 
@@ -68,6 +68,7 @@ int main(void) {
         //****************************************
   
         if(SW1){
+            timestamp=0;
             etapecarre=0;
           
         }
