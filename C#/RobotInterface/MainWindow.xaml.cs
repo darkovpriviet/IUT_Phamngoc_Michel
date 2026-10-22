@@ -22,6 +22,7 @@ using System.Windows.Ink;
 using SciChart.Charting.Common.Databinding;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 //kp==7 et Kp==140
 
@@ -39,8 +40,6 @@ namespace RobotInterface
     {
     
      
-        int step = 30;
-        private Ellipse waypointPoint;
         bool toogle, b;
         byte i;
         bool autoControlActivated;
@@ -48,17 +47,6 @@ namespace RobotInterface
         ExtendedSerialPort serialPort1;
         DispatcherTimer timerAffichage;
         Robot robot = new Robot();
-        private RotateTransform RotationGhost = new RotateTransform();
-        private TranslateTransform TranslationGhost = new TranslateTransform();
-        
-        private double lastAngle = 0;
-        private double cibleX = 0;
-        private double cibleY = 0;
-        private double cibleAngle = 0;
-
-        private TimeSpan? dernierRendu = null;
-        private bool animationActive = false;
-        private Queue<Point> fifoConsignes = new Queue<Point>();
 
 
 
@@ -77,82 +65,20 @@ namespace RobotInterface
             serialPort1.Open();
            //var _globalKeyboardHook = new GlobalKeyboardHook();
            // _globalKeyboardHook.KeyPressed += _globalKeyboardHook_KeyPressed;
-            this.Loaded += MainWindow_Loaded;
-       
-           
-    
 
-
-
-
-
-
-
-
-
+            // clic sur le terrain : l'intersection choisie devient la consigne
+            robotView.WaypointClicked += (x, y) => SendWaypoint((float)x, (float)y);
         }
 
-   
-
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void ButtonResetView_Click(object sender, RoutedEventArgs e)
         {
-            for (double x = 0; x <= myGrid.ActualWidth; x += step)
-            {
-                myGrid.Children.Add(new System.Windows.Shapes.Line
-                {
-                    X1 = x,
-                    Y1 = 0,
-                    X2 = x,
-                    Y2 = myGrid.ActualHeight,
-                    Stroke = Brushes.LightGray,
-                    StrokeThickness = 1
-                });
-            }
-
-            for (double y = 0; y <= myGrid.ActualHeight; y += step)
-            {
-                myGrid.Children.Add(new System.Windows.Shapes.Line
-                {
-                    X1 = 0,
-                    Y1 = y,
-                    X2 = myGrid.ActualWidth,
-                    Y2 = y,
-                    Stroke = Brushes.LightGray,
-                    StrokeThickness = 1
-                });
-            }
-            Canvas.SetLeft(PositionGhost, myGrid.ActualWidth / 2);
-            Canvas.SetTop(PositionGhost, myGrid.ActualHeight / 2);
-
-            TransformGroup group = new TransformGroup();
-            group.Children.Add(RotationGhost);
-            group.Children.Add(TranslationGhost);
-
-            PositionGhost.RenderTransform = group;
-       
-         
-
-            // Une seule inscription à l'événement de rendu.
-           
+            robotView.ResetView();
         }
 
-
-      
-
-
-        private void SizeGrid(object sender, EventArgs e)
+        private void ButtonClearTrails_Click(object sender, RoutedEventArgs e)
         {
-           
-
+            robotView.ClearTrails();
         }
-
-        private Ellipse waypoint = new Ellipse
-        {
-            Width = 12,
-            Height = 12,
-            Fill = Brushes.Red
-        };
-
 
 
         public void TimerAffichage_Tick(object sender, EventArgs e)
@@ -213,28 +139,69 @@ namespace RobotInterface
 
         private void SendWaypoint(float x, float Y)
         {
+            if (!TryParseNombre(EcartInput.Text, out double ecart))
+                ecart = 0;
 
-
-           
             byte[] payload = new byte[12];
             byte[] array = BitConverter.GetBytes(x);
             Array.Copy(array, 0, payload, 0, 4);
             array = BitConverter.GetBytes(Y);
             Array.Copy(array, 0, payload, 4, 4);
-            array = BitConverter.GetBytes(0);
+            array = BitConverter.GetBytes((float)ecart);
             Array.Copy(array, 0, payload, 8, 4);
 
-          
+            UartEncodeAndSendMessage(0x0081, payload.Length, payload); //1.57
 
-
-            UartEncodeAndSendMessage(0x0081, payload.Length, payload); //1.57   
-            XW.Text = "XWaypoint :" + x;
-            YW.Text = "YWaypoint :" + Y;
-        
+            robotView.SetWaypoint(x, Y);
+            ConsigneInput.Text = x.ToString("0.##", CultureInfo.InvariantCulture) + ";" + Y.ToString("0.##", CultureInfo.InvariantCulture);
+            ConsigneError.Text = "";
+            XW.Text = "Consigne X : " + x.ToString("N2") + " m";
+            YW.Text = "Consigne Y : " + Y.ToString("N2") + " m";
         }
 
+        // Accepte "1;0", "1 0", "1,0" (une seule virgule = séparateur) ou "0,5;-1"
+        private static bool TryParseConsigne(string text, out double x, out double y)
+        {
+            x = y = 0;
+            string s = text.Trim();
+            string[] parts;
+            if (s.Contains(';'))
+                parts = s.Split(';');
+            else if (s.Split((char[])null, StringSplitOptions.RemoveEmptyEntries).Length == 2)
+                parts = s.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+            else
+                parts = s.Split(',');
 
+            return parts.Length == 2
+                && TryParseNombre(parts[0], out x)
+                && TryParseNombre(parts[1], out y);
+        }
 
+        private static bool TryParseNombre(string text, out double v)
+        {
+            return double.TryParse(text.Trim().Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out v);
+        }
+
+        private void ButtonAller_Click(object sender, RoutedEventArgs e)
+        {
+            if (!TryParseConsigne(ConsigneInput.Text, out double x, out double y))
+            {
+                ConsigneError.Text = "Format attendu : X;Y  (ex : 1;0)";
+                return;
+            }
+            SendWaypoint((float)x, (float)y);
+        }
+
+        private void ConsigneInput_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                ButtonAller_Click(sender, e);
+        }
+
+        private void Test_Click_Origine(object sender, RoutedEventArgs e)
+        {
+            SendWaypoint(0, 0);
+        }
 
         private void Test_Click_Ouest(object sender, RoutedEventArgs e)
         {
@@ -394,47 +361,19 @@ namespace RobotInterface
 
     
 
-        private void Test_Click(object sender, RoutedEventArgs e)
+        private void ButtonGhostGains_Click(object sender, RoutedEventArgs e)
         {
-            if (!float.TryParse(XInput.Text, out float XInput1))
+            if (!TryParseNombre(AngKP.Text, out double AngKP1))
                 return;
-            if (!float.TryParse(YInput.Text, out float YInput1))
+            if (!TryParseNombre(AngKD.Text, out double AngKD1))
                 return;
-            if (!float.TryParse(EcartInput.Text, out float Ecartinput1))
-                return;
-
-            if (!float.TryParse(AngKD.Text, out float AngKD1))
-
-                return;
-
-            if (!float.TryParse(AngKP.Text, out float AngKP1))
-
-                return;
-
-
-
-
-            
-
-            List<byte> Input = new List<byte>();
-            Input.AddRange(BitConverter.GetBytes(XInput1)); //heho c des points qui faut mettre pas des virgules . maintenant c l'inverse sale batard
-            Input.AddRange(BitConverter.GetBytes(YInput1));
-            Input.AddRange(BitConverter.GetBytes(Ecartinput1));
-       
-
 
             List<byte> Input1 = new List<byte>();
-            Input1.AddRange(BitConverter.GetBytes(AngKP1));
-            Input1.AddRange(BitConverter.GetBytes(AngKD1));
-
-
-            byte[] ThetaTab = Input.ToArray();
+            Input1.AddRange(BitConverter.GetBytes((float)AngKP1));
+            Input1.AddRange(BitConverter.GetBytes((float)AngKD1));
 
             byte[] ThetaTab1 = Input1.ToArray();
-
-            UartEncodeAndSendMessage(0x81, ThetaTab.Length, ThetaTab);
             UartEncodeAndSendMessage(0x83, ThetaTab1.Length, ThetaTab1);
-
         }
         private byte CalculateChecksum(int msgFunction, int msgPayloadLength, byte[] msgPayload)
         {
@@ -584,6 +523,7 @@ namespace RobotInterface
                     X.Text = "X : " + robot.positionXOdo.ToString("N3") + " m";
                     Y.Text = "Y : " + robot.positionYOdo.ToString("N3") + " m";
                     angle.Text = "θ : " + robot.angleRadianFromOdometry.ToString("N3") + " rad";
+                    robotView.UpdateRobot(robot.positionXOdo, robot.positionYOdo, robot.angleRadianFromOdometry);
                     asservSpeedDisplay.UpdatePolarOdometrySpeed(robot.vitesseLineaireFromOdometry, robot.vitesseAngulaireFromOdometry);        
                     
                     break;
@@ -633,11 +573,9 @@ namespace RobotInterface
                 case StateMessage.Ghost:
 
 
-                    float ghost = BitConverter.ToSingle(msgPayload, 0);
-                    XG.Text = "XGhost : " + BitConverter.ToSingle(msgPayload, 0);
-                    YG.Text = "YGhost : " + BitConverter.ToSingle(msgPayload, 4);
-          
-                    ThetaG.Text= "ThetaGhost :"+ BitConverter.ToSingle(msgPayload, 20).ToString("N3");
+                    XG.Text = "X : " + BitConverter.ToSingle(msgPayload, 0).ToString("N3") + " m";
+                    YG.Text = "Y : " + BitConverter.ToSingle(msgPayload, 4).ToString("N3") + " m";
+                    ThetaG.Text = "θ : " + BitConverter.ToSingle(msgPayload, 20).ToString("N3") + " rad";
                     RotateRobot(BitConverter.ToSingle(msgPayload, 8));
                     //TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 12).ToString("N3"); 
                     //TextBoxréception.Text = BitConverter.ToSingle(msgPayload, 16).ToString("N3");
@@ -662,56 +600,21 @@ namespace RobotInterface
 
         }
 
+        // theta reçu en degrés (offset 8 du message 0x84), la vue travaille en radians
         private void RotateRobot(double theta)
         {
-            RotationGhost.Angle = -theta;
+            robotView.UpdateGhostTheta(theta * Math.PI / 180.0);
         }
 
+        // position du ghost en mètres : (1 ; 0) est dessiné pile sur l'intersection de la grille
         private void Avance(double x, double y)
         {
-            const double pixelsParMetre = 50.0;
+            robotView.UpdateGhostPosition(x, y);
+        }
 
-            TranslationGhost.X = x * pixelsParMetre;
-            TranslationGhost.Y = -y * pixelsParMetre;
-    }
-
-        private System.Windows.Shapes.Polyline trajectoire =
-    new System.Windows.Shapes.Polyline
-    {
-        Stroke = Brushes.OrangeRed,
-        StrokeDashArray = new DoubleCollection { 1, 2 },
-        StrokeThickness = 3
-    };
         private void Ellipse(double x, double y)
         {
-            double pixelsParMetre = 50;
-
-            double pixelX = myGrid.ActualWidth / 2 + x * pixelsParMetre;
-            double pixelY = myGrid.ActualHeight / 2 - y * pixelsParMetre;
-
-            // Ajouter la trajectoire une seule fois
-            if (!myGrid.Children.Contains(trajectoire))
-                myGrid.Children.Add(trajectoire);
-
-            // Ajouter la position à la trajectoire
-            trajectoire.Points.Add(new Point(pixelX, pixelY));
-
-            // Créer le point rouge une seule fois
-            if (waypointPoint == null)
-            {
-                waypointPoint = new Ellipse
-                {
-                    Width = 10,
-                    Height = 10,
-                    Fill = Brushes.Red
-                };
-
-                myGrid.Children.Add(waypointPoint);
-            }
-
-            // Déplacer le point rouge
-            Canvas.SetLeft(waypointPoint, pixelX - waypointPoint.Width / 2);
-            Canvas.SetTop(waypointPoint, pixelY - waypointPoint.Height / 2);
+            robotView.AddTracePoint(x, y);
         }
 
 

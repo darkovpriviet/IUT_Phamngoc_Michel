@@ -3,204 +3,393 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:RobotInterface" 
+        xmlns:local="clr-namespace:RobotInterface"
         xmlns:AsservDisplay="clr-namespace:WpfAsservissementDisplay_NS;assembly=WpfAsservissementDisplay"
         mc:Ignorable="d"
-        Title="MainWindow" Height="700" Width="1500">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition/>
-            <RowDefinition Height="144"/>
+        Title="Robot Interface" Height="880" Width="1500" MinHeight="700" MinWidth="1150"
+        Background="#0D0F13" FontFamily="Segoe UI" FontSize="13">
 
-            <RowDefinition Height="178.04"/>
-        </Grid.RowDefinitions>
+    <Window.Resources>
+        <SolidColorBrush x:Key="CardBg" Color="#171A20"/>
+        <SolidColorBrush x:Key="CardBorder" Color="#262B34"/>
+        <SolidColorBrush x:Key="InputBg" Color="#0F1216"/>
+        <SolidColorBrush x:Key="TextMain" Color="#E6E9EE"/>
+        <SolidColorBrush x:Key="TextDim" Color="#8A93A1"/>
+        <SolidColorBrush x:Key="Accent" Color="#4DA3FF"/>
+
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="6"/>
+        </Style>
+
+        <Style x:Key="CardTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextMain}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextDim}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="Value">
+            <Setter Property="Foreground" Value="{StaticResource TextMain}"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource InputBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMain}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource TextMain}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#232833"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMain}"/>
+            <Setter Property="BorderBrush" Value="#323947"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#2F6FD1"/>
+            <Setter Property="BorderBrush" Value="#3F7FE1"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="PadButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width" Value="62"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextMain}"/>
+            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="8">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30"/>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="30"/>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="30" Focusable="False"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="560"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="1" Grid.Row="1" >
 
-            <Canvas x:Name="myGrid"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch"
-        SizeChanged="SizeGrid">
-                <Polygon x:Name="PositionGhost"
-         Points="-10,-10 -10,10 20,0"
-         Fill="Red"
-         Stroke="Black"
-         StrokeThickness="2"/>
-        
-                   
+        <!-- ================= Colonne gauche : terrain ================= -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            </Canvas>
+            <Border Grid.Row="0" Style="{StaticResource Card}" Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
+                    <!-- en-tête -->
+                    <DockPanel Grid.Row="0" Margin="12,10,12,8" LastChildFill="False">
+                        <TextBlock Text="Terrain" Style="{StaticResource CardTitle}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="9" Height="9" Fill="#4DA3FF" Margin="0,0,5,0"/>
+                            <TextBlock Text="Robot" Style="{StaticResource FieldLabel}" Margin="0,0,14,0"/>
+                            <Ellipse Width="9" Height="9" Fill="#FFB43B" Margin="0,0,5,0"/>
+                            <TextBlock Text="Ghost" Style="{StaticResource FieldLabel}" Margin="0,0,14,0"/>
+                            <Ellipse Width="9" Height="9" Fill="#4ADE80" Margin="0,0,5,0"/>
+                            <TextBlock Text="Consigne" Style="{StaticResource FieldLabel}" Margin="0,0,14,0"/>
+                            <Ellipse Width="9" Height="9" Fill="#F87171" Margin="0,0,5,0"/>
+                            <TextBlock Text="Trajectoire" Style="{StaticResource FieldLabel}"/>
+                        </StackPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Content="Recentrer" Click="ButtonResetView_Click"/>
+                            <Button Content="Effacer traces" Click="ButtonClearTrails_Click"/>
+                        </StackPanel>
+                    </DockPanel>
 
+                    <local:RobotView x:Name="robotView" Grid.Row="1"/>
+
+                    <TextBlock Grid.Row="2" Margin="12,6,12,8" Foreground="{StaticResource TextDim}" FontSize="11"
+                               Text="Grille : 1 case = 1 m (sous-division 0,5 m) · Clic gauche : aller à l'intersection · Molette : zoom · Clic droit + glisser : déplacer la vue"/>
+                </Grid>
+            </Border>
+
+            <!-- barre de commande -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- consigne de position -->
+                <Border Grid.Column="0" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Consigne de position" Style="{StaticResource CardTitle}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="X ; Y (m)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="ConsigneInput" Grid.Column="1" Text="1;0" KeyUp="ConsigneInput_KeyUp"
+                                     ToolTip="Ex : 1;0 ou 1,0 ou 0.5;-1"/>
+                            <TextBlock Grid.Row="1" Text="Écart" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="EcartInput" Grid.Row="1" Grid.Column="1" Text="0"/>
+                        </Grid>
+                        <Button x:Name="ButtonAller" Content="Aller à l'intersection" Style="{StaticResource PrimaryButton}"
+                                Margin="0,8,0,0" Click="ButtonAller_Click"/>
+                        <TextBlock x:Name="ConsigneError" Foreground="#F87171" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- déplacements rapides -->
+                <Border Grid.Column="1" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Accès rapide" Style="{StaticResource CardTitle}"/>
+                        <Grid HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Button x:Name="Nord" Grid.Column="1" Grid.Row="0" Content="0;1" Style="{StaticResource PadButton}" Click="Test_Click_Nord"/>
+                            <Button x:Name="Ouest" Grid.Column="0" Grid.Row="1" Content="-1;0" Style="{StaticResource PadButton}" Click="Test_Click_Ouest"/>
+                            <Button x:Name="Origine" Grid.Column="1" Grid.Row="1" Content="0;0" Style="{StaticResource PadButton}" Click="Test_Click_Origine"/>
+                            <Button x:Name="Est" Grid.Column="2" Grid.Row="1" Content="1;0" Style="{StaticResource PadButton}" Click="Test_Click_Est"/>
+                            <Button x:Name="Sud" Grid.Column="1" Grid.Row="2" Content="0;-1" Style="{StaticResource PadButton}" Click="Test_Click_Sud"/>
+                            <Button x:Name="Nord_VPN" Grid.Column="2" Grid.Row="2" Content="1;-1" Style="{StaticResource PadButton}" Click="Test_Click_NordVpn"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- état position -->
+                <Border Grid.Column="2" Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Robot (odométrie)" Style="{StaticResource CardTitle}" Foreground="#4DA3FF"/>
+                            <TextBlock x:Name="X" Text="X : —" Style="{StaticResource Value}"/>
+                            <TextBlock x:Name="Y" Text="Y : —" Style="{StaticResource Value}"/>
+                            <TextBlock x:Name="angle" Text="θ : —" Style="{StaticResource Value}"/>
+                            <TextBlock x:Name="XW" Text="Consigne X : —" Style="{StaticResource Value}" Foreground="#4ADE80" Margin="0,8,0,2"/>
+                            <TextBlock x:Name="YW" Text="Consigne Y : —" Style="{StaticResource Value}" Foreground="#4ADE80"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Ghost" Style="{StaticResource CardTitle}" Foreground="#FFB43B"/>
+                            <TextBlock x:Name="XG" Text="X : —" Style="{StaticResource Value}"/>
+                            <TextBlock x:Name="YG" Text="Y : —" Style="{StaticResource Value}"/>
+                            <TextBlock x:Name="ThetaG" Text="θ : —" Style="{StaticResource Value}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
         </Grid>
-   
-           
 
-        <GroupBox x:Name="Reception" Header="Réception" Background="#FFBDBDBD" Grid.Column="1" BorderBrush="Black" Grid.Row="2" Margin="0,0,0,18">
-            <TextBox x:Name="TextBoxréception" TextWrapping="Wrap" Background="{x:Null}" BorderBrush="{x:Null}" IsReadOnly="True"/>
-        </GroupBox>
-        <StackPanel Orientation="Horizontal"  Grid.Column="1" Grid.Row="3" HorizontalAlignment="Center" Width="544"  >
-            <GroupBox x:Name="Leds" Header="Leds" BorderBrush="Black" Width="67" Height="130" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <StackPanel>
-                    <CheckBox x:Name="Led1" Content="Led1" IsChecked="False" Margin="5" />
-                    <CheckBox x:Name="Led2" Content="Led2" IsChecked="False"  Margin="5" />
-                    <CheckBox x:Name="Led3" Content="Led3" IsChecked="False" Margin="5"  />
-                </StackPanel>
-            </GroupBox>
-            <GroupBox x:Name="IR" Header="Télémètres IR" BorderBrush="Black" Width="124" Height="130" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <StackPanel>
-                    <TextBlock x:Name="IRG" Text="IR Gauche :" Margin="5"/>
-                    <TextBlock x:Name="IRC" Text="IR Centre :" Margin="5"/>
-                    <TextBlock x:Name="IRD" Text="IR Droit :" Margin="5"/>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox x:Name="Moteur" Header="Moteur" BorderBrush="Black"  Width="162" Height="130" VerticalAlignment="Top">
-                <StackPanel>
-                    <TextBlock x:Name="MG" Text="Vitesse Gauche :" Margin="2"/>
-                    <TextBlock x:Name="MD" Text="Vitesse Droite :" Margin="2"/>
-                    <TextBlock x:Name="X" Text="X :" Margin="2"/>
-                    <TextBlock x:Name="Y" Text="Y :" Margin="2"/>
-                    <TextBlock x:Name="angle" Text="θ :" Margin="2"/>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox x:Name="Ghost" Header="Ghost" BorderBrush="Black"  Width="180" Height="130" VerticalAlignment="Top">
-                <StackPanel>
-                    <TextBlock x:Name="XG" Text="XGhost : " Margin="2"/>
-                    <TextBlock x:Name="YG" Text="YGhost : " Margin="2"/>
-                    <TextBlock x:Name="ThetaG" Text="ThetaGhost : " Margin="2"/>
-                    <TextBlock x:Name="XW" Text="XWaypoint : " Margin="2"/>
-                    <TextBlock x:Name="YW" Text="YWaypoint : " Margin="2"/>
+        <!-- ================= Colonne droite : asservissement & capteurs ================= -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Asservissement vitesse" Style="{StaticResource CardTitle}"/>
+                        <AsservDisplay:AsservissementRobot2RouesDisplayControl x:Name="asservSpeedDisplay" Height="300"/>
+                    </StackPanel>
+                </Border>
 
-                </StackPanel>
-            </GroupBox>
+                <!-- réglages PID -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Réglages" Style="{StaticResource CardTitle}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="14"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="14"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal"  Grid.Column="1" Grid.Row="3" HorizontalAlignment="Center" Width="355">
+                            <Grid Grid.Column="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.ColumnSpan="2" Text="PID" Style="{StaticResource FieldLabel}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Row="1" Text="Kp" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="Kp" Grid.Row="1" Grid.Column="1"/>
+                                <TextBlock Grid.Row="2" Text="Ki" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="Ki" Grid.Row="2" Grid.Column="1"/>
+                                <TextBlock Grid.Row="3" Text="Kd" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="Kd" Grid.Row="3" Grid.Column="1"/>
+                            </Grid>
 
+                            <Grid Grid.Column="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.ColumnSpan="2" Text="PID X" Style="{StaticResource FieldLabel}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Row="1" Text="Kp" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="KpX" Grid.Row="1" Grid.Column="1"/>
+                                <TextBlock Grid.Row="2" Text="Ki" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="KiX" Grid.Row="2" Grid.Column="1"/>
+                                <TextBlock Grid.Row="3" Text="Kd" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="KdX" Grid.Row="3" Grid.Column="1"/>
+                            </Grid>
+
+                            <Grid Grid.Column="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.ColumnSpan="2" Text="Vitesse" Style="{StaticResource FieldLabel}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Row="1" Text="Lin." Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="LineaireBox" Grid.Row="1" Grid.Column="1"/>
+                                <TextBlock Grid.Row="2" Text="Ang." Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="AngulaireBox" Grid.Row="2" Grid.Column="1"/>
+                                <Button x:Name="buttonEnvoyer" Grid.Row="3" Grid.ColumnSpan="2" Content="Envoyer"
+                                        Style="{StaticResource PrimaryButton}" Margin="0,3" Click="buttonEnvoyer_Click"/>
+                            </Grid>
+                        </Grid>
+
+                        <Rectangle Height="1" Fill="{StaticResource CardBorder}" Margin="0,10"/>
+
+                        <DockPanel>
+                            <TextBlock Text="Asserv. angulaire ghost" Style="{StaticResource FieldLabel}" FontWeight="SemiBold"/>
+                            <Button DockPanel.Dock="Right" Content="Envoyer" Margin="10,3,0,3" Click="ButtonGhostGains_Click"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="Kp" Style="{StaticResource FieldLabel}" Margin="0,0,6,0"/>
+                                <TextBox x:Name="AngKP" Width="80"/>
+                                <TextBlock Text="Kd" Style="{StaticResource FieldLabel}" Margin="10,0,6,0"/>
+                                <TextBox x:Name="AngKD" Width="80"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- capteurs -->
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Télémètres IR" Style="{StaticResource CardTitle}"/>
+                            <TextBlock x:Name="IRG" Text="IR Gauche : —" Style="{StaticResource Value}"/>
+                            <TextBlock x:Name="IRC" Text="IR Centre : —" Style="{StaticResource Value}"/>
+                            <TextBlock x:Name="IRD" Text="IR Droite : —" Style="{StaticResource Value}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Moteurs" Style="{StaticResource CardTitle}"/>
+                            <TextBlock x:Name="MG" Text="Vitesse Gauche : —" Style="{StaticResource Value}"/>
+                            <TextBlock x:Name="MD" Text="Vitesse Droite : —" Style="{StaticResource Value}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                            <TextBlock Text="LEDs" Style="{StaticResource CardTitle}"/>
+                            <CheckBox x:Name="Led1" Content="Led 1"/>
+                            <CheckBox x:Name="Led2" Content="Led 2"/>
+                            <CheckBox x:Name="Led3" Content="Led 3"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- console -->
+                <Border Style="{StaticResource Card}">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                            <TextBlock Text="Réception" Style="{StaticResource CardTitle}"/>
+                            <Button x:Name="ButtonClear" DockPanel.Dock="Right" Content="Clear" Padding="10,2" Margin="0,0,0,6" Click="ButtonClear_Click"/>
+                        </DockPanel>
+                        <TextBox x:Name="TextBoxréception" Height="110" TextWrapping="Wrap" IsReadOnly="True"
+                                 VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" FontSize="12"/>
+                    </DockPanel>
+                </Border>
             </StackPanel>
-
-        </StackPanel>
-        <StackPanel Orientation="Horizontal"  Grid.Column="3" Grid.Row="1" HorizontalAlignment="Right">
- 
-            <AsservDisplay:AsservissementRobot2RouesDisplayControl x:Name="asservSpeedDisplay" Height="316" Width="358"/>
-  
-              
-           
-        </StackPanel>
-
-        <StackPanel Orientation="Horizontal"  Grid.Column="3" Grid.Row="3" HorizontalAlignment="Left" Width="355"  >
-            <GroupBox x:Name="IR1" Header="Assertissement" BorderBrush="Black" Width="170" Height="130" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <StackPanel HorizontalAlignment="Center" >
-                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
-                        <TextBlock x:Name="KpName" Text="Kp"  />
-                        <TextBox x:Name="Kp" HorizontalAlignment="Right" Width="106" KeyUp="TextKp_KeyUp"  />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal"  Margin="0,10,0,0" HorizontalAlignment="Center" >
-                        <TextBlock x:Name="KiName" Text="Ki" />
-                        <TextBox x:Name="Ki" Width="106" KeyUp="TextKp_KeyUp"  />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal"  Margin="0,10,0,0">
-                        <TextBlock x:Name="KdName" Text="Kd" />
-                        <TextBox x:Name="Kd" HorizontalAlignment="Center" Width="106"  KeyUp="TextKp_KeyUp"  />
-                    </StackPanel>
-
-                </StackPanel>
-            </GroupBox>
-        </StackPanel>
-
-
-        <StackPanel Orientation="Horizontal"  Grid.Column="3" Grid.Row="3" HorizontalAlignment="Left" Width="355" Margin="190,0,0,0" >
-            <GroupBox x:Name="IR2" Header="AsservissementX" BorderBrush="Black" Width="170" Height="130" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <StackPanel HorizontalAlignment="Center" >
-                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
-                        <TextBlock x:Name="KpNameX" Text="Kp"  />
-                        <TextBox x:Name="KpX" HorizontalAlignment="Right" Width="106" KeyUp="TextKp_KeyUp"  />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal"  Margin="0,10,0,0" HorizontalAlignment="Center" >
-                        <TextBlock x:Name="KiNameX" Text="Ki" />
-                        <TextBox x:Name="KiX" Width="106" KeyUp="TextKp_KeyUp"  />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal"  Margin="0,10,0,0">
-                        <TextBlock x:Name="KdNameX" Text="Kd" />
-                        <TextBox x:Name="KdX" HorizontalAlignment="Center" Width="106" KeyUp="TextKp_KeyUp"  />
-                    </StackPanel>
-
-                </StackPanel>
-            </GroupBox>
-        </StackPanel>
-
-
-
-
-        <StackPanel Orientation="Horizontal"  Grid.Column="3" Grid.Row="3" HorizontalAlignment="Left" Margin="400,0,0,0" Width="355" Grid.ColumnSpan="2"  >
-            <GroupBox x:Name="VitesseLetA" Header="Vitesse Linéaire et Angulaire" BorderBrush="Black" Width="170" Height="130" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <StackPanel HorizontalAlignment="Center" >
-                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
-                        <TextBlock x:Name="Lineaire" Text="Linéaire"  />
-                        <TextBox x:Name="LineaireBox" HorizontalAlignment="Right" Width="106" KeyUp="TextKp_KeyUp"  />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal"  Margin="0,10,0,0" HorizontalAlignment="Center" >
-                        <TextBlock x:Name="Angulaire" Text="Angulaire" />
-                        <TextBox x:Name="AngulaireBox" Width="106" KeyUp="TextKp_KeyUp"  />
-                    </StackPanel>
-
-
-                </StackPanel>
-            </GroupBox>
-        </StackPanel>
-
-
-
-
-
-
-        <StackPanel Grid.Column="3" Grid.Row="3" HorizontalAlignment="Left" Margin="649,42,0,-42" Width="56">
-            <Button x:Name="buttonEnvoyer" Content="Envoyer"  Width="56" Click="buttonEnvoyer_Click"/>
-            <Button x:Name="ButtonClear" Content="Clear" Click="ButtonClear_Click"   />
-            <Button x:Name="Test"  Content="Test"  Click="Test_Click" Width="54"/>
-
-
-        </StackPanel>
-        <StackPanel Grid.Column="3" Grid.Row="2" HorizontalAlignment="Right"  Width="54">
-
-            <Button x:Name="Nord"  Content="0;1"  Click="Test_Click_Nord" Width="54"/>
-            <Button x:Name="Est"  Content="1;0"  Click="Test_Click_Est" Width="54"/>
-            <Button x:Name="Ouest"  Content="-1;0"  Click="Test_Click_Ouest" Width="54"/>
-            <Button x:Name="Sud"  Content="0;-1"  Click="Test_Click_Sud" Width="54"/>
-            <Button x:Name="Nord_VPN"  Content="1;-1"  Click="Test_Click_NordVpn" Width="54"/>
-
-        </StackPanel>
-        <StackPanel Grid.Column="3" Grid.Row="2" HorizontalAlignment="Right"  Margin="0,0,80,0">
-            <TextBlock  Text="X,Y,Ecart :Input" Margin=" 0,0,0,15"  />
-            <TextBox x:Name="XInput"  KeyUp="TextKp_KeyUp"  />
-            <TextBox x:Name="YInput"  KeyUp="TextKp_KeyUp"  />
-            <TextBox x:Name="EcartInput"  KeyUp="TextKp_KeyUp"  />
-
-
-        </StackPanel>
-
-        <StackPanel Grid.Column="3" Grid.Row="2" HorizontalAlignment="Right"  Margin="0,0,200,0">
-            <TextBlock  Text="AsservAngGhost" Margin=" 0,0,0,15"  />
-            <TextBox x:Name="AngKP"  KeyUp="TextKp_KeyUp"  />
-            <TextBox x:Name="AngKD"  KeyUp="TextKp_KeyUp"  />
-
-
-
-
-
-        </StackPanel>
-
-
+        </ScrollViewer>
     </Grid>
 </Window>

@@ -9,40 +9,54 @@ namespace RobotInterface
 {
     /// <summary>
     /// Vue 2D du robot : repère en mètres, X vers la droite, Y vers le haut, θ en radians (anti-horaire).
-    /// Zoom : molette. Déplacement : clic droit/milieu + glisser. Clic gauche : événement WaypointClicked.
+    /// La grille est fixe : une ligne principale tous les GridStep mètres, donc une consigne (1 ; 0)
+    /// tombe exactement sur une intersection.
+    /// Zoom : molette. Déplacement : clic droit/milieu + glisser.
+    /// Clic gauche : choisit l'intersection la plus proche (événement WaypointClicked).
     /// </summary>
     public class RobotView : FrameworkElement
     {
         // ---------- Paramètres ----------
         public const int MaxTrailPoints = 3000;
-        const double RobotLength = 0.26;   // m
-        const double RobotWidth = 0.22;   // m (voie ≈ 0.218)
+        public const double GridStep = 1.0;     // m entre deux lignes principales
+        public const int MinorDivisions = 2;    // sous-divisions par case (0.5 m)
+        const double DefaultScale = 120;        // pixels par mètre
+        const double RobotLength = 0.26;        // m
+        const double RobotWidth = 0.22;         // m (voie ≈ 0.218)
+
+        /// <summary>Pas d'accrochage du clic souris (intersections principales et secondaires).</summary>
+        public static double SnapStep => GridStep / MinorDivisions;
 
         // ---------- État ----------
         readonly List<Point> robotTrail = new List<Point>();
         readonly List<Point> ghostTrail = new List<Point>();
-        Point robotPos, ghostPos, waypoint;
+        readonly List<Point> traceTrail = new List<Point>();
+        Point robotPos, ghostPos, waypoint, hoverPos;
         double robotTheta, ghostTheta;
-        bool hasRobot, hasGhost, hasWaypoint;
+        bool hasRobot, hasGhost, hasWaypoint, hasHover;
 
-        double scale = 120;                 // pixels par mètre
+        double scale = DefaultScale;
         Point origin = new Point(double.NaN, double.NaN); // position écran de (0,0)
         bool panning;
         Point panStart, originStart;
 
         public bool FollowRobot { get; set; } = false;
 
-        /// <summary>Levé quand l'utilisateur clique : coordonnées monde (m).</summary>
+        /// <summary>Levé quand l'utilisateur clique : coordonnées monde (m), accrochées à la grille.</summary>
         public event Action<double, double> WaypointClicked;
 
         // ---------- Couleurs ----------
-        static readonly Brush BgBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x14, 0x17, 0x1c)));
+        static readonly Brush BgBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x12, 0x15, 0x1a)));
         static readonly Brush TextBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x7d, 0x86, 0x94)));
-        static readonly Pen MinorPen = FrozenPen(Color.FromRgb(0x1f, 0x24, 0x2c), 1);
-        static readonly Pen MajorPen = FrozenPen(Color.FromRgb(0x2c, 0x33, 0x3e), 1);
-        static readonly Color RobotColor = Color.FromRgb(0x4d, 0xa3, 0xff);
-        static readonly Color GhostColor = Color.FromRgb(0xff, 0xb4, 0x3b);
-        static readonly Color WayColor = Color.FromRgb(0x4a, 0xde, 0x80);
+        static readonly Pen MinorPen = FrozenPen(Color.FromRgb(0x1d, 0x22, 0x2a), 1);
+        static readonly Pen MajorPen = FrozenPen(Color.FromRgb(0x2e, 0x35, 0x41), 1);
+        static readonly Pen AxisXPen = FrozenPen(Color.FromRgb(0xe5, 0x5b, 0x5b), 1.5);
+        static readonly Pen AxisYPen = FrozenPen(Color.FromRgb(0x5b, 0xe5, 0x8a), 1.5);
+        static readonly Brush NodeBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x3d, 0x46, 0x55)));
+        public static readonly Color RobotColor = Color.FromRgb(0x4d, 0xa3, 0xff);
+        public static readonly Color GhostColor = Color.FromRgb(0xff, 0xb4, 0x3b);
+        public static readonly Color WayColor = Color.FromRgb(0x4a, 0xde, 0x80);
+        public static readonly Color TraceColor = Color.FromRgb(0xf8, 0x71, 0x71);
 
         static Brush Frozen(SolidColorBrush b) { b.Freeze(); return b; }
         static Pen FrozenPen(Color c, double t) { var p = new Pen(new SolidColorBrush(c), t); p.Freeze(); return p; }
@@ -51,6 +65,7 @@ namespace RobotInterface
         {
             ClipToBounds = true;
             Focusable = true;
+            Cursor = Cursors.Cross;
         }
 
         // ---------- API publique (appeler depuis le thread UI : Dispatcher.Invoke) ----------
@@ -64,7 +79,14 @@ namespace RobotInterface
 
         public void UpdateGhost(double x, double y, double theta)
         {
-            ghostPos = new Point(x, y); ghostTheta = theta; hasGhost = true;
+            ghostTheta = theta;
+            UpdateGhostPosition(x, y);
+        }
+
+        /// <summary>Met à jour uniquement la position du ghost (message 0x82).</summary>
+        public void UpdateGhostPosition(double x, double y)
+        {
+            ghostPos = new Point(x, y); hasGhost = true;
             Push(ghostTrail, ghostPos, 0.003);
             InvalidateVisual();
         }
@@ -72,17 +94,26 @@ namespace RobotInterface
         /// <summary>Met à jour uniquement le cap du ghost (message 0x84).</summary>
         public void UpdateGhostTheta(double theta) { ghostTheta = theta; InvalidateVisual(); }
 
+        /// <summary>Ajoute un point à la trace de trajectoire (message 0x83).</summary>
+        public void AddTracePoint(double x, double y) { Push(traceTrail, new Point(x, y), 0.003); InvalidateVisual(); }
+
         public void SetWaypoint(double x, double y)
         {
             waypoint = new Point(x, y); hasWaypoint = true; InvalidateVisual();
         }
 
-        public void ClearTrails() { robotTrail.Clear(); ghostTrail.Clear(); hasWaypoint = false; InvalidateVisual(); }
+        public void ClearTrails()
+        {
+            robotTrail.Clear(); ghostTrail.Clear(); traceTrail.Clear(); hasWaypoint = false; InvalidateVisual();
+        }
 
         public void ResetView()
         {
-            scale = 120; origin = new Point(double.NaN, double.NaN); InvalidateVisual();
+            scale = DefaultScale; origin = new Point(double.NaN, double.NaN); InvalidateVisual();
         }
+
+        /// <summary>Arrondit une coordonnée à l'intersection de grille la plus proche.</summary>
+        public static double Snap(double v) => Math.Round(v / SnapStep) * SnapStep;
 
         static void Push(List<Point> l, Point p, double minStep)
         {
@@ -110,7 +141,7 @@ namespace RobotInterface
         {
             var m = e.GetPosition(this);
             var before = ToWorld(m);
-            scale = Math.Max(15, Math.Min(2000, scale * (e.Delta > 0 ? 1.15 : 1 / 1.15)));
+            scale = Math.Max(20, Math.Min(2000, scale * (e.Delta > 0 ? 1.15 : 1 / 1.15)));
             origin = new Point(m.X - before.X * scale, m.Y + before.Y * scale);
             InvalidateVisual();
         }
@@ -126,23 +157,36 @@ namespace RobotInterface
             else if (e.ChangedButton == MouseButton.Left)
             {
                 var w = ToWorld(e.GetPosition(this));
-                SetWaypoint(w.X, w.Y);
-                WaypointClicked?.Invoke(w.X, w.Y);
+                double x = Snap(w.X), y = Snap(w.Y);
+                SetWaypoint(x, y);
+                WaypointClicked?.Invoke(x, y);
             }
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            if (!panning) return;
             var p = e.GetPosition(this);
-            origin = new Point(originStart.X + p.X - panStart.X, originStart.Y + p.Y - panStart.Y);
+            if (panning)
+            {
+                origin = new Point(originStart.X + p.X - panStart.X, originStart.Y + p.Y - panStart.Y);
+            }
+            else
+            {
+                var w = ToWorld(p);
+                hoverPos = new Point(Snap(w.X), Snap(w.Y)); hasHover = true;
+            }
             InvalidateVisual();
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            hasHover = false; InvalidateVisual();
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             if (!panning) return;
-            panning = false; ReleaseMouseCapture(); Cursor = Cursors.Arrow;
+            panning = false; ReleaseMouseCapture(); Cursor = Cursors.Cross;
         }
 
         // ---------- Rendu ----------
@@ -155,8 +199,10 @@ namespace RobotInterface
             if (double.IsNaN(origin.X)) origin = new Point(w / 2, h / 2);
 
             DrawGrid(dc, w, h);
-            DrawTrail(dc, ghostTrail, GhostColor, 0.55, 2);
-            DrawTrail(dc, robotTrail, RobotColor, 0.9, 2.5);
+            DrawTrail(dc, traceTrail, TraceColor, 0.6, 2, dashed: true);
+            DrawTrail(dc, ghostTrail, GhostColor, 0.55, 2, dashed: false);
+            DrawTrail(dc, robotTrail, RobotColor, 0.9, 2.5, dashed: false);
+            if (hasHover && !panning) DrawHover(dc);
             if (hasWaypoint) DrawWaypoint(dc);
             if (hasRobot && hasGhost) DrawError(dc);
             if (hasGhost) DrawRobot(dc, ghostPos, ghostTheta, GhostColor, ghost: true);
@@ -166,57 +212,65 @@ namespace RobotInterface
 
         void DrawGrid(DrawingContext dc, double w, double h)
         {
-            // pas "joli" : 1-2-5 × 10^n tel que ≥ 60 px
-            double target = 60 / scale;
-            double pow = Math.Pow(10, Math.Floor(Math.Log10(target)));
-            double step = pow;
-            foreach (var m in new[] { 1.0, 2.0, 5.0, 10.0 }) { step = pow * m; if (step >= target) break; }
-            double minor = step / 5;
-
             var tl = ToWorld(new Point(0, 0));
             var br = ToWorld(new Point(w, h));
 
-            if (minor * scale >= 10)
+            // lignes secondaires
+            double minor = GridStep / MinorDivisions;
+            if (minor * scale >= 12)
             {
                 for (double x = Math.Floor(tl.X / minor) * minor; x <= br.X; x += minor)
-                { double sx = Math.Round(ToScreen(new Point(x, 0)).X) + .5; dc.DrawLine(MinorPen, new Point(sx, 0), new Point(sx, h)); }
+                { double sx = Px(ToScreen(new Point(x, 0)).X); dc.DrawLine(MinorPen, new Point(sx, 0), new Point(sx, h)); }
                 for (double y = Math.Floor(br.Y / minor) * minor; y <= tl.Y; y += minor)
-                { double sy = Math.Round(ToScreen(new Point(0, y)).Y) + .5; dc.DrawLine(MinorPen, new Point(0, sy), new Point(w, sy)); }
+                { double sy = Px(ToScreen(new Point(0, y)).Y); dc.DrawLine(MinorPen, new Point(0, sy), new Point(w, sy)); }
             }
 
-            for (double x = Math.Floor(tl.X / step) * step; x <= br.X; x += step)
+            // lignes principales, étiquetées une ligne sur n si elles sont trop serrées
+            int labelEvery = Math.Max(1, (int)Math.Ceiling(45 / (GridStep * scale)));
+            long ix0 = (long)Math.Floor(tl.X / GridStep), ix1 = (long)Math.Ceiling(br.X / GridStep);
+            long iy0 = (long)Math.Floor(br.Y / GridStep), iy1 = (long)Math.Ceiling(tl.Y / GridStep);
+
+            for (long i = ix0; i <= ix1; i++)
             {
-                double sx = Math.Round(ToScreen(new Point(x, 0)).X) + .5;
+                double sx = Px(ToScreen(new Point(i * GridStep, 0)).X);
                 dc.DrawLine(MajorPen, new Point(sx, 0), new Point(sx, h));
-                if (Math.Abs(x) > 1e-9) Label(dc, Fmt(x), new Point(sx + 3, h - 16));
+                if (i != 0 && i % labelEvery == 0) Label(dc, Fmt(i * GridStep), new Point(sx + 3, h - 16));
             }
-            for (double y = Math.Floor(br.Y / step) * step; y <= tl.Y; y += step)
+            for (long j = iy0; j <= iy1; j++)
             {
-                double sy = Math.Round(ToScreen(new Point(0, y)).Y) + .5;
+                double sy = Px(ToScreen(new Point(0, j * GridStep)).Y);
                 dc.DrawLine(MajorPen, new Point(0, sy), new Point(w, sy));
-                if (Math.Abs(y) > 1e-9) Label(dc, Fmt(y), new Point(4, sy - 14));
+                if (j != 0 && j % labelEvery == 0) Label(dc, Fmt(j * GridStep), new Point(4, sy - 14));
             }
+
+            // points aux intersections principales
+            if (GridStep * scale >= 30)
+                for (long i = ix0; i <= ix1; i++)
+                    for (long j = iy0; j <= iy1; j++)
+                        dc.DrawEllipse(NodeBrush, null, ToScreen(new Point(i * GridStep, j * GridStep)), 2, 2);
 
             // axes
             var o = ToScreen(new Point(0, 0));
-            var axX = FrozenPen(Color.FromRgb(0xe5, 0x5b, 0x5b), 1.5);
-            var axY = FrozenPen(Color.FromRgb(0x5b, 0xe5, 0x8a), 1.5);
-            dc.DrawLine(axX, new Point(o.X, o.Y), new Point(o.X + 40, o.Y));
-            dc.DrawLine(axY, new Point(o.X, o.Y), new Point(o.X, o.Y - 40));
+            dc.DrawLine(AxisXPen, o, new Point(o.X + 40, o.Y));
+            dc.DrawLine(AxisYPen, o, new Point(o.X, o.Y - 40));
             Label(dc, "x", new Point(o.X + 43, o.Y - 8));
             Label(dc, "y", new Point(o.X - 4, o.Y - 58));
         }
 
+        static double Px(double v) => Math.Round(v) + .5;
+
         static string Fmt(double v) => v.ToString("0.##", CultureInfo.InvariantCulture) + " m";
 
-        void Label(DrawingContext dc, string s, Point p)
+        void Label(DrawingContext dc, string s, Point p) => Label(dc, s, p, TextBrush);
+
+        void Label(DrawingContext dc, string s, Point p, Brush b)
         {
             var ft = new FormattedText(s, CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
-                new Typeface("Segoe UI"), 11, TextBrush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                new Typeface("Segoe UI"), 11, b, VisualTreeHelper.GetDpi(this).PixelsPerDip);
             dc.DrawText(ft, p);
         }
 
-        void DrawTrail(DrawingContext dc, List<Point> pts, Color c, double opacity, double thickness)
+        void DrawTrail(DrawingContext dc, List<Point> pts, Color c, double opacity, double thickness, bool dashed)
         {
             if (pts.Count < 2) return;
             var geo = new StreamGeometry();
@@ -228,18 +282,31 @@ namespace RobotInterface
             geo.Freeze();
             var b = new SolidColorBrush(c) { Opacity = opacity };
             var pen = new Pen(b, thickness) { LineJoin = PenLineJoin.Round, StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+            if (dashed) pen.DashStyle = new DashStyle(new double[] { 1, 2 }, 0);
             dc.DrawGeometry(null, pen, geo);
+        }
+
+        void DrawHover(DrawingContext dc)
+        {
+            var p = ToScreen(hoverPos);
+            var b = new SolidColorBrush(WayColor) { Opacity = 0.5 };
+            dc.DrawEllipse(null, new Pen(b, 1.5), p, 6, 6);
+            Label(dc, Coord(hoverPos), new Point(p.X + 10, p.Y - 20), b);
         }
 
         void DrawWaypoint(DrawingContext dc)
         {
             var p = ToScreen(waypoint);
-            var pen = new Pen(new SolidColorBrush(WayColor), 2);
-            dc.DrawEllipse(null, pen, p, 10, 10);
+            var brush = new SolidColorBrush(WayColor);
+            var pen = new Pen(brush, 2);
+            dc.DrawEllipse(new SolidColorBrush(WayColor) { Opacity = 0.15 }, pen, p, 10, 10);
             dc.DrawLine(pen, new Point(p.X - 16, p.Y), new Point(p.X + 16, p.Y));
             dc.DrawLine(pen, new Point(p.X, p.Y - 16), new Point(p.X, p.Y + 16));
-            Label(dc, $"({waypoint.X:0.00} ; {waypoint.Y:0.00})", new Point(p.X + 14, p.Y + 10));
+            Label(dc, Coord(waypoint), new Point(p.X + 14, p.Y + 8), brush);
         }
+
+        static string Coord(Point p) =>
+            "(" + p.X.ToString("0.##", CultureInfo.InvariantCulture) + " ; " + p.Y.ToString("0.##", CultureInfo.InvariantCulture) + ")";
 
         void DrawError(DrawingContext dc)
         {
@@ -283,6 +350,9 @@ namespace RobotInterface
             }
             arrow.Freeze();
             dc.DrawGeometry(new SolidColorBrush(c), null, arrow);
+
+            // point central = position exacte (posée sur l'intersection visée)
+            dc.DrawEllipse(new SolidColorBrush(c), null, new Point(0, 0), 2.5, 2.5);
 
             dc.Pop(); dc.Pop();
         }
