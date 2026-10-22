@@ -37,6 +37,7 @@ robotState.saveSpeed_Angulaire=vitesseAngulaire;
 
 
 
+
 //
 void PWMSetSpeedCommandPolaire(float vitesseLineaire, float vitesseAngulaire) {
     /*
@@ -83,13 +84,12 @@ TransmitAsserv();
 }
 
 
+
+
+
 void UpdateAsservissementGhost() //kp=50 kd =2  LIN kd=35 kp=1,7?
 {
-    
-    
- 
- 
-         robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
+            robotState.PDAng.erreur=ModuloByAngle(robotState.angleRadianFromOdometry,Rotation.ThetaGhost)-robotState.angleRadianFromOdometry;
  
   
 

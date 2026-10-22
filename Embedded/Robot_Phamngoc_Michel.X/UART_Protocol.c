@@ -268,14 +268,18 @@ void Consigne ( float x, float y, float ecart){
             else if(x<0){
                 if(y>0)
                 {
-                     Rotation.ThetaWay=M_PI+atan(y/x)- ecart;
-                   Rotation.Waysave=M_PI+atan(y/x);
+                    Rotation.ThetaWay=M_PI+atan(y/x)- ecart;
+                    Rotation.Waysave=M_PI+atan(y/x);
                 }
                    
                 else if (y<0){
-                    Rotation.ThetaWay=-M_PI+atan(y/x) - ecart;
-                     Rotation.Waysave =-M_PI+atan(y/x);
+                Rotation.ThetaWay=-M_PI+atan(y/x) - ecart;
+                Rotation.Waysave =-M_PI+atan(y/x);
                 }
+                else{ // y == 0 : cap plein arrière
+                Rotation.ThetaWay = M_PI - ecart;
+                Rotation.Waysave  = M_PI;
+    }
            
      
             }

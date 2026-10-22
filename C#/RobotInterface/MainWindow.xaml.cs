@@ -239,7 +239,7 @@ namespace RobotInterface
         private void Test_Click_Ouest(object sender, RoutedEventArgs e)
         {
             
-            SendWaypoint(-1, 0);
+            SendWaypoint((float)-0.1, 0);
 
             
         }
@@ -247,22 +247,22 @@ namespace RobotInterface
         private void Test_Click_Est(object sender, RoutedEventArgs e)
         {
           
-            SendWaypoint(1, 0);
+            SendWaypoint((float)0.1, 0);
         }
         private void Test_Click_Nord(object sender, RoutedEventArgs e)
         {
         
-            SendWaypoint(0, 1);
+            SendWaypoint(0, (float)0.1);
         }
         private void Test_Click_Sud(object sender, RoutedEventArgs e)
         {
            
-            SendWaypoint(0, -1);
+            SendWaypoint(0, (float)-0.1);
         }
         private void Test_Click_NordVpn(object sender, RoutedEventArgs e)
         {
            
-            SendWaypoint(1, -1);
+            SendWaypoint((float)0.1, (float)-0.1);
         }
 
 

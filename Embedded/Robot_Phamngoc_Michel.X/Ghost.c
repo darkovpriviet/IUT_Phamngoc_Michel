@@ -26,8 +26,8 @@ float AccelerationTheta= 2;
 float VitesseThetaMax= 5;
 
 extern  unsigned long timestamp;
-float AccelerationLineaire= 0.2;
-float VitesseLinMax= 1;
+float AccelerationLineaire= 0.5;
+float VitesseLinMax= 2;
 volatile int compteur_etape;
  volatile int etapecarre=75;
 Ghost longitunal;
@@ -88,7 +88,7 @@ void Longueur() {
    
     longitunal.longRestant =  longitunal.HypoWay-longitunal.ThetaGhost;
     
-    longitunal.ThetaArret = VitesseLineaire*VitesseLineaire /(2*AccelerationTheta);
+    longitunal.ThetaArret = VitesseLineaire*VitesseLineaire /(2*AccelerationLineaire);
             
     longitunal.incrementTheta =VitesseLineaire/FREQ_ECH_QEI ;
     
@@ -218,7 +218,7 @@ void carre(){
     switch(etapecarre){
         
         case ATTENTE: 
-             if(timestamp>=1000){
+             if(timestamp>=500){
              timestamp = 0;
              longitunal.ThetaGhost =0;
              etapecarre=DROIT;
@@ -226,7 +226,7 @@ void carre(){
              break;
              
         case ATTENTE2:
-            if(attente==1 && timestamp>=1000){
+            if(attente==1 && timestamp>=500){
                 attente=0;
                 etapecarre=2+compteur_etape;
                 timestamp=0;
@@ -249,12 +249,12 @@ void carre(){
             etapecarre=ATTENTE2;
             break; 
         case POINTB:
-            Consigne(1.155+0.489,0.489,0);
+            Consigne(1.644,0.489,0);
              compteur_etape++;
             etapecarre=ATTENTE2;
             break;
         case POINTC:
-            Consigne(1.155+0.489,0,0);
+            Consigne(1.644,0,0);
              compteur_etape++;
             etapecarre=ATTENTE2;
             break;
@@ -264,7 +264,8 @@ void carre(){
             etapecarre=ATTENTE2;
             break;
         case POINTE:
-            Consigne(1.155+0.489/2,0.489/2,0);
+             //Consigne(0,0,0);
+            Consigne(1.155 + 0.489/2, 0.489/2,0);
             compteur_etape=0;
             etapecarre=75;
      
